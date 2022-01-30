@@ -1,4 +1,4 @@
-﻿using FriendOrganizer.Data;
+﻿using FriendOrganizer.UI.Data;
 using FriendOrganizer.Model;
 using System;
 using System.Collections.Generic;
@@ -7,9 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FriendOrganizer.ViewModel
+namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
+    {
+        // QQ 拜託property的話讓他public 不然view之間溝通會出問題QQ
+        // 一個private變public的問題耗了我3個小時阿QQ
+        public INavigationViewModel NavigationViewModel { get; }
+        public IFriendDetailViewModel FriendDetailViewModel { get; }
+
+        public MainViewModel(
+            INavigationViewModel navigationViewModel,
+            IFriendDetailViewModel friendDetailViewModel
+            )
+        {
+            NavigationViewModel = navigationViewModel;
+            FriendDetailViewModel = friendDetailViewModel;
+        }
+
+        public async Task LoadAsync() 
+        {
+           // 不用return東西 而是call LoadAsync function去抓資料
+           await NavigationViewModel.LoadAsync();
+        }
+    }
+}
+
+/* 
+ Old version: before decoupling the ui
+
+public class MainViewModel : ViewModelBase
     {
         // ObservableCollection<T> >> from System.Collections.ObjectModel
         // this is the collection that notifies data binding when the data is changed
@@ -45,9 +72,9 @@ namespace FriendOrganizer.ViewModel
             }
         }
 
-        public void Load() 
+        public async Task LoadAsync() 
         {
-            var friends = _friendDataService.GetAll();
+            var friends = await _friendDataService.GetAllAsync();
 
             // since the load method can be called multiple times
             // remember to clear the old data
@@ -60,4 +87,6 @@ namespace FriendOrganizer.ViewModel
             }
         }
     }
-}
+ 
+ 
+ */

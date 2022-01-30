@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace FriendOrganizer.ViewModel
+namespace FriendOrganizer.UI.ViewModel
 {
+    // ViewModelBase 主要在處理當資料變化時的響應是變化
+    // 所以如果不是會有被動資料變動的viewModel 可以不用繼承此ViewModelBase
     public class ViewModelBase : INotifyPropertyChanged // using system.ComponentModel
     {
         // raise this event when any property changed (through OnPropertyChanged event handler)

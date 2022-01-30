@@ -1,4 +1,4 @@
-﻿using FriendOrganizer.ViewModel;
+﻿using FriendOrganizer.UI.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FriendOrganizer
+namespace FriendOrganizer.UI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -35,10 +35,10 @@ namespace FriendOrganizer
             // 這邊是在Loaded這個handler裡面加上load朋友資料的event
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // sender 跟 args 都不一定要用，只要有人觸發event就會call下面的code
-            _viewModel.Load();
+            await _viewModel.LoadAsync();
         }
     }
 }

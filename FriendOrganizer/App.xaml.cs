@@ -1,7 +1,8 @@
 ﻿using Autofac;
-using FriendOrganizer.Data;
-using FriendOrganizer.Startup;
-using FriendOrganizer.ViewModel;
+using FriendOrganizer.UI;
+using FriendOrganizer.UI.Data;
+using FriendOrganizer.UI.Startup;
+using FriendOrganizer.UI.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -10,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace FriendOrganizer
+namespace FriendOrganizer.UI
 {
     /// <summary>
     /// Interaction logic for App.xaml
