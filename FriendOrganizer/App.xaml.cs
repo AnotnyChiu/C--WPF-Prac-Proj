@@ -41,5 +41,15 @@ namespace FriendOrganizer.UI
 
             mainWindow.Show();
         }
+
+        private void Application_DispatcherUnhandledException(
+            object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            // display error in message box
+            string errMessage = $"Unexpected Error Occured. Please Inform The Admin\n{e.Exception.Message}";
+            MessageBox.Show(errMessage, "Unexpected Error");
+
+            e.Handled = true; // mark the exception as handled, and let the program continue
+        }
     }
 }

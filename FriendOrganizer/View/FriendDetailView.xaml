@@ -22,6 +22,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
+            <!--for save button-->
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Label Content="FirstName" Margin="10 10 10 0"/>
         <!--margin設定方式跟css很像，依樣上下左右-->
@@ -37,9 +39,15 @@
             />
         <Label Grid.Row="4" Content="Email" Margin="10 0"/>
         <!--margin設定方式跟css很像，依樣上下左右-->
-        <TextBox Grid.Row="5" Text="{Binding Friend.Email,
+        <!--注意Email不是Required但是空字串會被判定不是Email形式，所以要把empty string視為null-->
+        <!--在Text 上加入 TargetNullValue='' -->
+        <TextBox Grid.Row="5" Text="{Binding Friend.Email, TargetNullValue='',
                 Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 Margin="10 0 10 10"
             />
+        <StackPanel Grid.Row="7" Orientation="Horizontal">
+            <Button Content="Save" Width="125" Margin="10"
+                    Command="{Binding SaveCommand}"/>
+        </StackPanel>
     </Grid>
 </UserControl>

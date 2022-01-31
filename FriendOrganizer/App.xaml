@@ -2,10 +2,40 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:FriendOrganizer.UI"
-             Startup="Application_Startup">
+             Startup="Application_Startup"
+             DispatcherUnhandledException="Application_DispatcherUnhandledException">
              <!--不要用startup uri 開啟xmal頁面，而是直接開startup-->
              <!--去App.cs把main window load 進來-->
     <Application.Resources>
-         
+        <!--here are the resources that are application wide-->
+        <Style TargetType="TextBox">
+            <!--create our own error template-->
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <!--stakePanel means stake blocks vertically-->
+                        <StackPanel>
+                            <!--AdornedElementPlaceholder is the textbox we have-->
+                            <AdornedElementPlaceholder x:Name="placeholder"/>
+                            <TextBlock FontSize="12" Foreground="Red" 
+                                       Text="{Binding ElementName=placeholder,
+                                       Path=AdornedElement.(Validation.Errors)[0].ErrorContent
+                                }"/>
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <!-- change textbox's background color-->
+                    <Setter Property="Background" Value="Red"/>
+                    <!--for tooltip property-->
+                    <!-- binding the exception message since our exception return string-->
+                    <Setter Property="ToolTip" 
+                            Value="{Binding RelativeSource={RelativeSource Self}
+                            , Path=(Validation.Errors)[0].ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Application.Resources>
 </Application>

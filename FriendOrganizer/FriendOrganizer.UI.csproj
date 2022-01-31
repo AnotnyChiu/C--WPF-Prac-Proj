@@ -80,8 +80,13 @@
     </ApplicationDefinition>
     <Compile Include="Data\IFriendLookupDataService.cs" />
     <Compile Include="Data\LookupDataService.cs" />
+    <Compile Include="Event\AfterFriendSvaeEvent.cs" />
     <Compile Include="Event\OpenFriendDetailViewEvent.cs" />
     <Compile Include="Startup\Boostrapper.cs" />
+    <Compile Include="ViewModel\EntityExtend\FriendWrapper.cs" />
+    <Compile Include="ViewModel\EntityExtend\ModelWrapper.cs" />
+    <Compile Include="ViewModel\EntityExtend\NavigationItemViewModel.cs" />
+    <Compile Include="ViewModel\EntityExtend\NotifyDataErrorInfoBase.cs" />
     <Compile Include="ViewModel\FriendDetailViewModel.cs" />
     <Compile Include="ViewModel\IFriendDetailViewModel.cs" />
     <Compile Include="ViewModel\INavigationViewModel.cs" />
