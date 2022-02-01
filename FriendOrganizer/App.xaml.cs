@@ -27,7 +27,7 @@ namespace FriendOrganizer.UI
             //var mainWindow = 
             //    new MainWindow(
             //        new MainViewModel(
-            //            new FriendDataService()
+            //            new FriendRepository()
             //        )
             //    );
 

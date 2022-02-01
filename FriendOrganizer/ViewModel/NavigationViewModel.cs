@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 using Prism.Events;
 using FriendOrganizer.UI.Event;
 using FriendOrganizer.UI.ViewModel.EntityExtend;
+using FriendOrganizer.UI.Data.Lookup;
 
 namespace FriendOrganizer.UI.ViewModel
 {
     // every viewModel also need an interface to register in boostrapper
     public class NavigationViewModel : ViewModelBase, INavigationViewModel
     {
-        private readonly IFriendLookupDataService _friendLookupService;
+        private readonly ILookupDataService _friendLookupService;
         private readonly IEventAggregator _eventAggregator;
 
         // entity
@@ -43,7 +44,7 @@ namespace FriendOrganizer.UI.ViewModel
 
 
         public NavigationViewModel(
-            IFriendLookupDataService friendLookupDataService,
+            ILookupDataService friendLookupDataService,
             IEventAggregator eventAggregator
             // event sender view model need this event aggregator
             )

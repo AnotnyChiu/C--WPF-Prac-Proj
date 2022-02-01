@@ -1,5 +1,6 @@
 ﻿using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data;
+using FriendOrganizer.UI.Data.Repository;
 using FriendOrganizer.UI.Event;
 using FriendOrganizer.UI.ViewModel.EntityExtend;
 using Prism.Commands;
@@ -15,8 +16,27 @@ namespace FriendOrganizer.UI.ViewModel
 {
     public class FriendDetailViewModel : ViewModelBase, IFriendDetailViewModel
     {
-        private IFriendDataService _dataService;
+        private IFriendRepository _friendRepository;
         private IEventAggregator _eventAggregator;
+        private bool _hasChanges;
+
+        public bool HasChanges
+        {
+            get  => _hasChanges;
+            set 
+            {
+                // make sure it really changed
+                if (_hasChanges != value) 
+                {
+                    _hasChanges = value;
+                    OnPropertyChanged();
+
+                    // raise save event (RaiseCanExecuteChanged)
+                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         // setup friend property
         private FriendWrapper _friend;
         public FriendWrapper Friend
@@ -34,32 +54,21 @@ namespace FriendOrganizer.UI.ViewModel
 
         // ctor
         public FriendDetailViewModel(
-            IFriendDataService friendDataService,
+            IFriendRepository friendDataService,
             IEventAggregator eventAggregator
             )
         {
-            _dataService = friendDataService;
+            _friendRepository = friendDataService;
             _eventAggregator = eventAggregator;
-
-            // 在constructor中subcribe event，然後建一個method來handle event
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                            .Subscribe(OnOpenFriendDetailView);
-            // 注意這邊subscribe event的寫法，不需要()跟傳入參數
-            // 只需要告訴他是哪個function即可
 
             // using prism's delegate method
             // it takes an execute method and a boolean to indecate canExecuteMethod
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
         }
 
-        private async void OnOpenFriendDetailView(int friendId)
-        {
-            await LoadAsync(friendId);
-        }
-
         public async Task LoadAsync(int friendId)
         {
-            var friendEntity = await _dataService.GetByIdAsync(friendId);
+            var friendEntity = await _friendRepository.GetByIdAsync(friendId);
 
             // convert Friend to Friend Wrapper
             Friend = new FriendWrapper(friendEntity);
@@ -67,6 +76,11 @@ namespace FriendOrganizer.UI.ViewModel
             // install event handler for the property changed event
             Friend.PropertyChanged += (s, e) =>
             {
+                // create a check so it won't call the HasChanges everytime
+                if (!HasChanges) 
+                {
+                    HasChanges = _friendRepository.HasChanges();
+                }
                 if (e.PropertyName == nameof(Friend.HasErrors))
                 {
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
@@ -83,14 +97,17 @@ namespace FriendOrganizer.UI.ViewModel
             // check input friend is valid，如果不行會自動被disable
             // make sure this method is called > this will be called
             // when we raise "CanExecuteChangeEvent" >> go to LoadAsync method
-            return Friend!=null && !Friend.HasErrors;
+            return Friend!=null && !Friend.HasErrors && HasChanges;
         }
 
         private async void OnSaveExecute()
         {
             // save the input friend into db
             // pass the property into function!
-            await _dataService.SaveAsync(Friend.Model); // here need to pass pure entity
+            await _friendRepository.SaveAsync();
+
+            // update hasChange property from db context
+            HasChanges = _friendRepository.HasChanges();
 
             // publish event to refresh the navigation part >> then go to navigationViewModel to subcribe it
             _eventAggregator.GetEvent<AfterFriendSvaeEvent>()

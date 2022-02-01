@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FriendOrganizer.UI.Data
+namespace FriendOrganizer.UI.Data.Lookup
 {
-    public class LookupDataService : IFriendLookupDataService
+    public class LookupDataService : ILookupDataService
     {
         private readonly Func<FriendOrganizerDbContext> _context;
 

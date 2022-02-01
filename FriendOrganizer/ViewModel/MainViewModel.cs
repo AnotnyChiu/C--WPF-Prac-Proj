@@ -6,29 +6,79 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Prism.Events;
+using FriendOrganizer.UI.Event;
+using System.Windows;
+using FriendOrganizer.UI.View.Services;
 
 namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
+        private IEventAggregator _eventAggregator;
+
         // QQ 拜託property的話讓他public 不然view之間溝通會出問題QQ
         // 一個private變public的問題耗了我3個小時阿QQ
         public INavigationViewModel NavigationViewModel { get; }
-        public IFriendDetailViewModel FriendDetailViewModel { get; }
+        private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; set; }
+
+        private IMessageDialogService _messageDialogService;
+        private IFriendDetailViewModel _friendDetailViewModel;
+        public IFriendDetailViewModel FriendDetailViewModel
+        {
+            get { return _friendDetailViewModel; }
+            private set 
+            {
+                _friendDetailViewModel = value;
+                OnPropertyChanged();
+            }
+        }
 
         public MainViewModel(
             INavigationViewModel navigationViewModel,
-            IFriendDetailViewModel friendDetailViewModel
+            Func<IFriendDetailViewModel> friendDetailViewModelCreator,
+            IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService
             )
         {
+            _friendDetailViewModelCreator = friendDetailViewModelCreator;
+
+            _messageDialogService = messageDialogService;
+
+            // 在constructor中subcribe event，然後建一個method來handle event
+            _eventAggregator = eventAggregator;
+            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
+                            .Subscribe(OnOpenFriendDetailView);
+            // 注意這邊subscribe event的寫法，不需要()跟傳入參數
+            // 只需要告訴他是哪個function即可
+
             NavigationViewModel = navigationViewModel;
-            FriendDetailViewModel = friendDetailViewModel;
         }
 
         public async Task LoadAsync() 
         {
            // 不用return東西 而是call LoadAsync function去抓資料
            await NavigationViewModel.LoadAsync();
+        }
+
+        private async void OnOpenFriendDetailView(int friendId)
+        {
+            // 每次點擊一個新的朋友，都會從新開啟一個repository，所以注意在切換之前
+            // 要先提醒使用者舊的部分如果有做修改的話會不見
+            if (FriendDetailViewModel != null && FriendDetailViewModel.HasChanges) 
+            {
+                // 注意 Messagebox不要直接用在viewModel裡面，不然會打斷unitest
+                var result = _messageDialogService.ShowOkCancelDialog(
+                    "You've made chnages. Navigate away may lose the data. Sure to leave?",
+                    "Question");
+
+                // 注意這邊他的result是enum 不用property方式取
+                // 注意2: 可以用js寫法了 不用開block
+                if (result == MessageDialogResult.Cancel) return;
+            }
+
+            FriendDetailViewModel = _friendDetailViewModelCreator();
+            await FriendDetailViewModel.LoadAsync(friendId);
         }
     }
 }
@@ -43,9 +93,9 @@ public class MainViewModel : ViewModelBase
         // is important when add or remove the data items
         public ObservableCollection<Friend> Friends { get; set; }
         private Friend _selectedFriend;
-        private readonly IFriendDataService _friendDataService;
+        private readonly IFriendRepository _friendDataService;
 
-        public MainViewModel(IFriendDataService friendDataService)
+        public MainViewModel(IFriendRepository friendDataService)
         {
             Friends = new ObservableCollection<Friend>();
             _friendDataService = friendDataService;

@@ -78,8 +78,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Data\IFriendLookupDataService.cs" />
-    <Compile Include="Data\LookupDataService.cs" />
+    <Compile Include="Data\Lookup\ILookupDataService.cs" />
+    <Compile Include="Data\Lookup\LookupDataService.cs" />
     <Compile Include="Event\AfterFriendSvaeEvent.cs" />
     <Compile Include="Event\OpenFriendDetailViewEvent.cs" />
     <Compile Include="Startup\Boostrapper.cs" />
@@ -99,6 +99,8 @@
     <Compile Include="View\NavigationView.xaml.cs">
       <DependentUpon>NavigationView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Services\IMessageDialogService.cs" />
+    <Compile Include="View\Services\MessageDialogService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -107,8 +109,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\FriendDataService.cs" />
-    <Compile Include="Data\IFriendDataService.cs" />
+    <Compile Include="Data\Repository\FriendRepository.cs" />
+    <Compile Include="Data\Repository\IFriendRepository.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
