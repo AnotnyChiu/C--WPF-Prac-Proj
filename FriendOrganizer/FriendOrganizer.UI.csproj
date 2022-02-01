@@ -82,6 +82,11 @@
     <Compile Include="Data\Lookup\LookupDataService.cs" />
     <Compile Include="Event\AfterFriendSvaeEvent.cs" />
     <Compile Include="Event\OpenFriendDetailViewEvent.cs" />
+    <Compile Include="PostgreSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PostgreSQL.xsd</DependentUpon>
+    </Compile>
     <Compile Include="Startup\Boostrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\FriendWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\ModelWrapper.cs" />
@@ -143,6 +148,17 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="PostgreSQL.xsc">
+      <DependentUpon>PostgreSQL.xsd</DependentUpon>
+    </None>
+    <None Include="PostgreSQL.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>PostgreSQL.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="PostgreSQL.xss">
+      <DependentUpon>PostgreSQL.xsd</DependentUpon>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -160,6 +176,9 @@
       <Project>{f28bd408-c757-4419-85d4-884adceba1a5}</Project>
       <Name>FriendOrganizer.Model</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

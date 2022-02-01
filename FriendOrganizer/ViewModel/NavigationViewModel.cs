@@ -22,27 +22,6 @@ namespace FriendOrganizer.UI.ViewModel
         // entity
         public ObservableCollection<NavigationItemViewModel> Friends { get; }
 
-        // send event when a friend is clicked
-        private NavigationItemViewModel _selectedFriend;
-        public NavigationItemViewModel SelectedFriend
-        {
-            get { return _selectedFriend; }
-            set { 
-                _selectedFriend = value;
-                OnPropertyChanged();
-
-                // publish event
-                if (_selectedFriend != null) 
-                {
-                    // 先從event list中抓到要的event後publish
-                    // publish 同時要傳入argument
-                    _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                                    .Publish(_selectedFriend.Id);
-                }
-            }
-        }
-
-
         public NavigationViewModel(
             ILookupDataService friendLookupDataService,
             IEventAggregator eventAggregator
@@ -79,7 +58,9 @@ namespace FriendOrganizer.UI.ViewModel
             foreach (var item in lookup)
             {
                 Friends.Add(
-                    new NavigationItemViewModel(item.Id, item.DisplayMember)
+                    new NavigationItemViewModel(
+                        item.Id, item.DisplayMember,
+                        _eventAggregator)
                     );
             }
         }

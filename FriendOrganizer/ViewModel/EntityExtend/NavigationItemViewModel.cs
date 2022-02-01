@@ -1,8 +1,12 @@
-﻿using System;
+﻿using FriendOrganizer.UI.Event;
+using Prism.Commands;
+using Prism.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace FriendOrganizer.UI.ViewModel.EntityExtend
 {
@@ -15,13 +19,20 @@ namespace FriendOrganizer.UI.ViewModel.EntityExtend
     /// </note>
     public class NavigationItemViewModel : ViewModelBase
     {
-        public NavigationItemViewModel(int id, string displayMember)
+        private IEventAggregator _eventAggregator;
+        public NavigationItemViewModel(int id, string displayMember,
+            IEventAggregator eventAggregator)
         {
             Id = id;
             DisplayMember = displayMember;
+
+            _eventAggregator = eventAggregator;
+            OpenFriendDetailCommand = new DelegateCommand(OnOpenFriendDetailView);
         }
 
         public int Id { get; }
+
+        public ICommand OpenFriendDetailCommand { get; set; }
 
         private string _displayMember;
         public string DisplayMember 
@@ -32,6 +43,15 @@ namespace FriendOrganizer.UI.ViewModel.EntityExtend
                 _displayMember = value;
                 OnPropertyChanged();
             }    
+        }
+
+
+        private void OnOpenFriendDetailView()
+        {
+            // 先從event list中抓到要的event後publish
+            // publish 同時要傳入argument
+            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
+                            .Publish(Id);
         }
     }
 }
