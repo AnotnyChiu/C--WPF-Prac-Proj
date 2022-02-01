@@ -17,6 +17,8 @@ namespace FriendOrganizer.DataAccess
     {
         public DbSet<Friend> Friends { get; set; }
 
+        public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
+
         // use base constructor to specify connection string
         // but put the connString setting inside app.config file
         public FriendOrganizerDbContext() : base("FriendOrganizerDb")

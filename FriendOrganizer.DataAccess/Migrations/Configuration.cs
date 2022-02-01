@@ -30,6 +30,15 @@
                 new Friend { FirstName = "Kenny", LastName = "Hsiao" },
                 new Friend { FirstName = "Frank", LastName = "Wang" }
                 );
+
+            // seed fpr programming language
+            context.ProgrammingLanguages.AddOrUpdate(pl => pl.Name,
+                new ProgrammingLanguage { Name = "C#" },
+                new ProgrammingLanguage { Name = "TypeScript" },
+                new ProgrammingLanguage { Name = "Swift" },
+                new ProgrammingLanguage { Name = "Java" },
+                new ProgrammingLanguage { Name = "F#" }
+                );
         }
     }
 }
