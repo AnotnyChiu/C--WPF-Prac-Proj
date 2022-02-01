@@ -10,6 +10,7 @@ using Prism.Events;
 using FriendOrganizer.UI.Event;
 using System.Windows;
 using FriendOrganizer.UI.View.Services;
+using Prism.Commands;
 
 namespace FriendOrganizer.UI.ViewModel
 {
@@ -20,6 +21,7 @@ namespace FriendOrganizer.UI.ViewModel
         // QQ 拜託property的話讓他public 不然view之間溝通會出問題QQ
         // 一個private變public的問題耗了我3個小時阿QQ
         public INavigationViewModel NavigationViewModel { get; }
+        public DelegateCommand CreateNewFriendCommand { get; }
         private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; set; }
 
         private IMessageDialogService _messageDialogService;
@@ -47,12 +49,19 @@ namespace FriendOrganizer.UI.ViewModel
 
             // 在constructor中subcribe event，然後建一個method來handle event
             _eventAggregator = eventAggregator;
+
+            // also have to make the event argument nullable
             _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
                             .Subscribe(OnOpenFriendDetailView);
             // 注意這邊subscribe event的寫法，不需要()跟傳入參數
             // 只需要告訴他是哪個function即可
 
+            // hide detail view after friend deleted >> subscribe to delete event
+            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Subscribe(AfterFriendDeleted);
+
             NavigationViewModel = navigationViewModel;
+
+            CreateNewFriendCommand = new DelegateCommand(OnCreateNewFriendExecute);
         }
 
         public async Task LoadAsync() 
@@ -61,7 +70,7 @@ namespace FriendOrganizer.UI.ViewModel
            await NavigationViewModel.LoadAsync();
         }
 
-        private async void OnOpenFriendDetailView(int friendId)
+        private async void OnOpenFriendDetailView(int? friendId) // add a ? to make it nullable
         {
             // 每次點擊一個新的朋友，都會從新開啟一個repository，所以注意在切換之前
             // 要先提醒使用者舊的部分如果有做修改的話會不見
@@ -79,6 +88,18 @@ namespace FriendOrganizer.UI.ViewModel
 
             FriendDetailViewModel = _friendDetailViewModelCreator();
             await FriendDetailViewModel.LoadAsync(friendId);
+        }
+
+        private void OnCreateNewFriendExecute()
+        {
+            // just open a new view with empty friend
+            OnOpenFriendDetailView(null);
+        }
+
+        private void AfterFriendDeleted(int friendId)
+        {
+            // hide the detail view
+            FriendDetailViewModel = null;
         }
     }
 }

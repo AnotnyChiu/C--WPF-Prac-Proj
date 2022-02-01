@@ -49,5 +49,16 @@ namespace FriendOrganizer.UI.Data.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public void Add(Friend friend)
+        {
+            // call the db set
+            _context.Friends.Add(friend);
+        }
+
+        public void Remove(Friend friend)
+        {
+            _context.Friends.Remove(friend);
+        }
     }
 }

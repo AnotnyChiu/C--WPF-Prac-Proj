@@ -36,16 +36,9 @@ namespace FriendOrganizer.UI.ViewModel
             // * 雙向互動，當select一個friend時: navigation publish, detail subscribe
             // 當在detail 按下save時，detail publish, navigation subscribe
             _eventAggregator.GetEvent<AfterFriendSvaeEvent>().Subscribe(AfterFriendSaved);
-        }
 
-        private void AfterFriendSaved(AfterFriendSvaeEventArgs obj)
-        {
-            // Single >> return the only entity match the rule
-            // and get into exception if not only one matched
-            var lookupItem = Friends.Single(l => l.Id == obj.Id);
-            lookupItem.DisplayMember = obj.DisplayMember;
-
-            // 到這邊還差一步，因為DisplayMember這個property還沒implement INotifyChage 的interface
+            // subscribe to also delete event
+            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Subscribe(AfterFriendDeleted);
         }
 
         public async Task LoadAsync()
@@ -64,6 +57,32 @@ namespace FriendOrganizer.UI.ViewModel
                     );
             }
         }
+
+        private void AfterFriendSaved(AfterFriendSvaeEventArgs obj)
+        {
+            // Single >> return the only entity match the rule
+            // and get into exception if not only one matched
+            var lookupItem = Friends.SingleOrDefault(l => l.Id == obj.Id);
+
+            // if the Id is null, means we're creating a new friend here
+            if (lookupItem == null) 
+            {
+                Friends.Add(
+                    new NavigationItemViewModel(obj.Id,obj.DisplayMember,_eventAggregator));
+            }
+            else lookupItem.DisplayMember = obj.DisplayMember; // 一樣跟進es6了
+
+            // 到這邊還差一步，因為DisplayMember這個property還沒implement INotifyChage 的interface
+        }
+
+        private void AfterFriendDeleted(int friendId)
+        {
+            var friend = Friends.SingleOrDefault(f => f.Id == friendId);
+
+            // update UI by update Friends' collection
+            if (friend != null) Friends.Remove(friend);
+        }
+
     }
 }
 

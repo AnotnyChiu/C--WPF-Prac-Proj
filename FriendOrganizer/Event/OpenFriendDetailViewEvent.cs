@@ -9,7 +9,7 @@ namespace FriendOrganizer.UI.Event
 {
     // using prism event aggregator, and inherit PubSubEvent<T>
     // here since the argument(parameter) is friend id, so let it be int
-    public class OpenFriendDetailViewEvent: PubSubEvent<int>
+    public class OpenFriendDetailViewEvent: PubSubEvent<int?>
     {
     }
 }

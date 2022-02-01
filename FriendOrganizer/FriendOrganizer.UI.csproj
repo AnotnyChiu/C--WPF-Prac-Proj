@@ -80,6 +80,7 @@
     </ApplicationDefinition>
     <Compile Include="Data\Lookup\ILookupDataService.cs" />
     <Compile Include="Data\Lookup\LookupDataService.cs" />
+    <Compile Include="Event\AfterFriendDeletedEvent.cs" />
     <Compile Include="Event\AfterFriendSvaeEvent.cs" />
     <Compile Include="Event\OpenFriendDetailViewEvent.cs" />
     <Compile Include="PostgreSQL.Designer.cs">

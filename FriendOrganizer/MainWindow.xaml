@@ -5,17 +5,47 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FriendOrganizer.UI"
         xmlns:view="clr-namespace:FriendOrganizer.UI.View"
+        xmlns:viewModel="clr-namespace:FriendOrganizer.UI.ViewModel"
         mc:Ignorable="d"
         Title="FriendOrganizer" Height="450" Width="800" FontSize="20">
-        <!--can also defind font size here in title tag-->
+    <!--can also defind font size here in title tag-->
+    <Window.Resources>
+        <!--implicit here means we don't have to specify x:key-->
+        <DataTemplate DataType="{x:Type viewModel:FriendDetailViewModel}">
+            <view:FriendDetailView/>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/> <!--asteric means the space left over-->
+            <ColumnDefinition Width="40*"/>
+            <!--<ColumnDefinition Width="257*"/>-->
+            <!--asteric means the space left over-->
         </Grid.ColumnDefinitions>
+        <!--1st row create friend button-->
+        <Menu Grid.ColumnSpan="2" FontSize="20" Margin="0,0,-0.4,0.4">
+            <MenuItem Header="Create">
+                <MenuItem Header="New Friend" Command="{Binding CreateNewFriendCommand}"/>
+            </MenuItem>
+        </Menu>
         <!--navigation part (left side list)-->
-        <view:NavigationView DataContext="{Binding NavigationViewModel}"/>
+        <view:NavigationView
+            Grid.Row="1"
+            DataContext="{Binding NavigationViewModel}" 
+            Margin="0,0,0,0.4"/>
         <!--friend detail part (right side textbox)-->
-        <view:FriendDetailView Grid.Column="1" DataContext="{Binding FriendDetailViewModel}"/>
+        <!--use content control with implicit data template-->
+        <!--when we specify content here to be viewModel, it will dynamically look up the
+        implicit data template-->
+        <ContentControl 
+            Grid.Row="1"
+            Grid.Column="1"
+            Content="{Binding FriendDetailViewModel}"
+            Grid.ColumnSpan="2"
+            Margin="0,0,-0.4,0.4"/>
     </Grid>
 </Window>
