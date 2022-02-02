@@ -10,6 +10,7 @@ using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,9 +56,28 @@ namespace FriendOrganizer.UI.ViewModel
                 // 任何會有變化的地方，都會需要這樣設定property
             }
         }
+
+        // selected number
+        private FriendPhoneNumberWrapper _selectedPhoneNumber;
+        public FriendPhoneNumberWrapper SelectedPhoneNumber 
+        {
+            get => _selectedPhoneNumber;
+            set 
+            {
+                _selectedPhoneNumber = value;
+                OnPropertyChanged();
+                // set remove event executable after value set
+                ((DelegateCommand)RemovePhoneNumberCommand).RaiseCanExecuteChanged();
+            }
+        }
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; }
+        public ICommand AddPhoneNumberCommand { get; }
+        public ICommand RemovePhoneNumberCommand { get; }
         public ObservableCollection<LookupItem> ProgrammingLanguages { get; }
+        public ObservableCollection<FriendPhoneNumberWrapper> PhoneNumbers { get; }
+
+        
 
         // ctor
         public FriendDetailViewModel(
@@ -77,8 +97,48 @@ namespace FriendOrganizer.UI.ViewModel
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute);
 
+            // add and remove phone command
+            AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
+            RemovePhoneNumberCommand = 
+                new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
+
             // get programming languages
             ProgrammingLanguages = new ObservableCollection<LookupItem>();
+            // get phone numbers
+            PhoneNumbers = new ObservableCollection<FriendPhoneNumberWrapper>();
+        }
+
+        private bool OnRemovePhoneNumberCanExecute()
+        {
+            return SelectedPhoneNumber != null;
+        }
+
+        private void OnRemovePhoneNumberExecute()
+        {
+            // remove event handler for selected phone number
+            SelectedPhoneNumber.PropertyChanged -= FriendPhoneNumberWrapper_PropertyChanged;
+            // remove from entity
+            _friendRepository.RemovePhoneNumber(SelectedPhoneNumber.Model);
+            // remove from UI
+            PhoneNumbers.Remove(SelectedPhoneNumber);
+            // reset selected phone number
+            SelectedPhoneNumber = null;
+            // notify changes
+            HasChanges = _friendRepository.HasChanges();
+            // let save button executable
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+        }
+
+        private void OnAddPhoneNumberExecute()
+        {
+            var newNumber = new FriendPhoneNumberWrapper(new FriendPhoneNumber());
+            newNumber.PropertyChanged += FriendPhoneNumberWrapper_PropertyChanged;
+            // for UI to see new number
+            PhoneNumbers.Add(newNumber);
+            // for entity to save into db
+            Friend.Model.PhoneNumbers.Add(newNumber.Model);
+            // trigger validation (little trick)
+            newNumber.Number = "";
         }
 
         public async Task LoadAsync(int? friendId)
@@ -94,8 +154,42 @@ namespace FriendOrganizer.UI.ViewModel
             // initialize friend
             InitializeFriend(friendEntity);
 
+            // initialize phone numbers
+            InitializeFriendPhoneNumbers(friendEntity.PhoneNumbers);
+
             // load programming languages
             await LoadProgrammmingLanguagesLookupAsync();
+        }
+
+        private void InitializeFriendPhoneNumbers(ICollection<FriendPhoneNumber> phoneNumbers)
+        {
+            // 看不懂...
+            foreach (var wrapper in PhoneNumbers)
+            {
+                // cleanup logic if already have phonenumberwrapper in phnoe numbers property 
+                wrapper.PropertyChanged -= FriendPhoneNumberWrapper_PropertyChanged; 
+            }
+
+            PhoneNumbers.Clear();
+            foreach (var friendPhoneNumber in phoneNumbers)
+            {
+                var wrapper = new FriendPhoneNumberWrapper(friendPhoneNumber);
+                PhoneNumbers.Add(wrapper);
+                wrapper.PropertyChanged += FriendPhoneNumberWrapper_PropertyChanged;
+            }
+        }
+
+        private void FriendPhoneNumberWrapper_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!HasChanges)
+            {
+                HasChanges = _friendRepository.HasChanges();
+            }
+            if (e.PropertyName == nameof(FriendPhoneNumberWrapper.HasErrors)) 
+            {
+                // if have error in phone number, user shouldn't able to save friend
+                ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            }
         }
 
         private void InitializeFriend(Friend friendEntity)
@@ -145,7 +239,11 @@ namespace FriendOrganizer.UI.ViewModel
             // check input friend is valid，如果不行會自動被disable
             // make sure this method is called > this will be called
             // when we raise "CanExecuteChangeEvent" >> go to LoadAsync method
-            return Friend!=null && !Friend.HasErrors && HasChanges;
+            return
+                Friend != null
+                && !Friend.HasErrors
+                && HasChanges
+                && PhoneNumbers.All(pn => !pn.HasErrors); // check all phone numbers should be valid
         }
 
         private async void OnSaveExecute()

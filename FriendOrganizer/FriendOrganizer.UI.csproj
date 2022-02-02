@@ -90,6 +90,7 @@
       <DependentUpon>PostgreSQL.xsd</DependentUpon>
     </Compile>
     <Compile Include="Startup\Boostrapper.cs" />
+    <Compile Include="ViewModel\EntityExtend\FriendPhoneNumberWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\FriendWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\ModelWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\NavigationItemViewModel.cs" />

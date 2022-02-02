@@ -39,6 +39,14 @@
                 new ProgrammingLanguage { Name = "Java" },
                 new ProgrammingLanguage { Name = "F#" }
                 );
+
+            // make sure threre are friends saved before setting phone numbers
+            context.SaveChanges();
+
+            // seed phone number
+            context.FriendPhoneNumbers.AddOrUpdate(pn => pn.Number,
+                new FriendPhoneNumber { Number = "0931031618", FriendId = context.Friends.FirstOrDefault().Id}
+                );
         }
     }
 }

@@ -28,10 +28,15 @@ namespace FriendOrganizer.UI.Data.Repository
         public async Task<Friend> GetByIdAsync(int friendId)
         {
             // load from db
-            var firends = await _context.Friends.SingleAsync(f => f.Id == friendId);
+            var firends = await _context.Friends
+                .Include(f => f.PhoneNumbers) // join 作法
+                .SingleAsync(f => f.Id == friendId);
                 
             // as no tracking : 重新從DB取 不是先去快取找
             // 使用System.Data.Entity的ToListAsync，讓method變asyncronous
+
+            // load phone numbers
+
 
             // async 測試
             // await Task.Delay(5000);
@@ -59,6 +64,11 @@ namespace FriendOrganizer.UI.Data.Repository
         public void Remove(Friend friend)
         {
             _context.Friends.Remove(friend);
+        }
+
+        public void RemovePhoneNumber(FriendPhoneNumber model)
+        {
+            _context.FriendPhoneNumbers.Remove(model);
         }
     }
 }
