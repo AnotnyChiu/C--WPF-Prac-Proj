@@ -1,4 +1,5 @@
 ﻿using FriendOrganizer.Model;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.Data.Repository
@@ -7,5 +8,6 @@ namespace FriendOrganizer.UI.Data.Repository
     // 他的interface也要繼承 generic interface
     public interface IMeetingRepository : IGenericRepository<Meeting>
     {
+        Task<List<Friend>> GetAllFriendsAsync();
     }
 }

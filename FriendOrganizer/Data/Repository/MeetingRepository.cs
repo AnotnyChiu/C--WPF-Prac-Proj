@@ -23,5 +23,11 @@ namespace FriendOrganizer.UI.Data.Repository
                 .Include(m => m.Friends)
                 .SingleAsync(m => m.Id == id);
         }
+
+        // get all friends for the picklist
+        public async Task<List<Friend>> GetAllFriendsAsync() 
+        {
+            return await _context.Set<Friend>().ToListAsync();
+        }
     }
 }

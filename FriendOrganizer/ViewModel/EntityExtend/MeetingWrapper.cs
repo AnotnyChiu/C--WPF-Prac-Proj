@@ -24,14 +24,14 @@ namespace FriendOrganizer.UI.ViewModel.EntityExtend
         { 
           get => GetValue<DateTime>();
           set 
-            {
+           {
                 SetValue(value);
                 // check date validation
                 if (DateTo < DateFrom) 
                 {
                     DateTo = DateFrom;
                 }
-            } 
+           } 
         }
 
         public DateTime DateTo

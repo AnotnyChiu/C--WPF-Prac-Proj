@@ -43,6 +43,18 @@ namespace FriendOrganizer.UI.Data.Repository
             return firends;
         }
 
+        // implement the logic if a friend is part of a meeting, he can't be deleted
+        public async Task<bool> HasMeetingsAsync(int friendId) 
+        {
+            /*
+             * 有時我們不會想從快取獲得資料，因為DB資料可能已被其他方式異動(直接操作DB)，而快取卻還保持舊資料
+             * ，因此可以透過AsNoTracking進行新的查詢，獲得DB中目前實際的資料。
+             */
+            return await _context.Meetings.AsNoTracking()
+                .Include(m => m.Friends)
+                .AnyAsync(m => m.Friends.Any(f => f.Id == friendId));
+        }
+
         public void RemovePhoneNumber(FriendPhoneNumber model)
         {
             _context.FriendPhoneNumbers.Remove(model);

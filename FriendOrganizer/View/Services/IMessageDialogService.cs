@@ -4,5 +4,6 @@
     {
         // remember go to boostrapper to register the interface
         MessageDialogResult ShowOkCancelDialog(string text, string title);
+        void ShowInfoDialog(string text);
     }
 }
