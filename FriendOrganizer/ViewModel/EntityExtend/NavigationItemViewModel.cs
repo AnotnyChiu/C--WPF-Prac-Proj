@@ -20,19 +20,23 @@ namespace FriendOrganizer.UI.ViewModel.EntityExtend
     public class NavigationItemViewModel : ViewModelBase
     {
         private IEventAggregator _eventAggregator;
-        public NavigationItemViewModel(int id, string displayMember,
-            IEventAggregator eventAggregator)
+        public NavigationItemViewModel(
+            int id, string displayMember,
+            IEventAggregator eventAggregator,
+            string detailViewModelName
+            )
         {
             Id = id;
             DisplayMember = displayMember;
+            _detailViewModelName = detailViewModelName;
 
             _eventAggregator = eventAggregator;
-            OpenFriendDetailCommand = new DelegateCommand(OnOpenFriendDetailView);
+            OpenDetailViewCommand = new DelegateCommand(OnOpenDetailViewExecute);
         }
 
         public int Id { get; }
 
-        public ICommand OpenFriendDetailCommand { get; set; }
+        public ICommand OpenDetailViewCommand { get; set; }
 
         private string _displayMember;
         public string DisplayMember 
@@ -45,13 +49,18 @@ namespace FriendOrganizer.UI.ViewModel.EntityExtend
             }    
         }
 
+        private string _detailViewModelName;
 
-        private void OnOpenFriendDetailView()
+        private void OnOpenDetailViewExecute()
         {
             // 先從event list中抓到要的event後publish
             // publish 同時要傳入argument
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                            .Publish(Id);
+            _eventAggregator.GetEvent<OpenDetailViewEvent>()
+                            .Publish(new OpenDetailViewEventArgs
+                            {
+                                Id = this.Id,
+                                ViewModelName = _detailViewModelName
+                            });
         }
     }
 }

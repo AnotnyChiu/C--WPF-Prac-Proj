@@ -35,10 +35,11 @@ namespace FriendOrganizer.UI.ViewModel
             // subscribe save event
             // * 雙向互動，當select一個friend時: navigation publish, detail subscribe
             // 當在detail 按下save時，detail publish, navigation subscribe
-            _eventAggregator.GetEvent<AfterFriendSvaeEvent>().Subscribe(AfterFriendSaved);
+            _eventAggregator.GetEvent<AfterDetailSavedEvent>().Subscribe(AfterDetailSaved);
 
             // subscribe to also delete event
-            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Subscribe(AfterFriendDeleted);
+            _eventAggregator.GetEvent<AfterDetailDeletedEvent>()
+                .Subscribe(AfterDetailDeleted);
         }
 
         public async Task LoadAsync()
@@ -53,36 +54,53 @@ namespace FriendOrganizer.UI.ViewModel
                 Friends.Add(
                     new NavigationItemViewModel(
                         item.Id, item.DisplayMember,
-                        _eventAggregator)
+                        _eventAggregator,
+                        nameof(FriendDetailViewModel))
                     );
             }
         }
 
-        private void AfterFriendSaved(AfterFriendSvaeEventArgs obj)
+        private void AfterDetailSaved(AfterDetailSavedEventArgs args)
         {
-            // Single >> return the only entity match the rule
-            // and get into exception if not only one matched
-            var lookupItem = Friends.SingleOrDefault(l => l.Id == obj.Id);
-
-            // if the Id is null, means we're creating a new friend here
-            if (lookupItem == null) 
+            // switch for different view models
+            switch (args.ViewModelName)
             {
-                Friends.Add(
-                    new NavigationItemViewModel(obj.Id,obj.DisplayMember,_eventAggregator));
+                case nameof(FriendDetailViewModel):
+                    // Single >> return the only entity match the rule
+                    // and get into exception if not only one matched
+                    var lookupItem = Friends.SingleOrDefault(l => l.Id == args.Id);
+
+                    // if the Id is null, means we're creating a new friend here
+                    if (lookupItem == null)
+                    {
+                        Friends.Add(
+                            new NavigationItemViewModel(args.Id, args.DisplayMember,
+                            _eventAggregator,
+                            nameof(FriendDetailViewModel) // pass the name to generate event args
+                            ));
+                    }
+                    else lookupItem.DisplayMember = args.DisplayMember; // 一樣跟進es6了
+                    break;
+                default:
+                    break;
             }
-            else lookupItem.DisplayMember = obj.DisplayMember; // 一樣跟進es6了
-
-            // 到這邊還差一步，因為DisplayMember這個property還沒implement INotifyChage 的interface
+            
         }
 
-        private void AfterFriendDeleted(int friendId)
+        private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
-            var friend = Friends.SingleOrDefault(f => f.Id == friendId);
-
-            // update UI by update Friends' collection
-            if (friend != null) Friends.Remove(friend);
+            // switch for different view models
+            switch (args.ViewModelName)
+            {
+                case nameof(FriendDetailViewModel):
+                    var friend = Friends.SingleOrDefault(f => f.Id == args.Id);
+                    // update UI by update Friends' collection
+                    if (friend != null) Friends.Remove(friend);
+                    break;
+                default:
+                    break;
+            }
         }
-
     }
 }
 

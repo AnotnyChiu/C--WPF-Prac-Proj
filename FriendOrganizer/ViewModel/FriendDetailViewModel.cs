@@ -18,30 +18,12 @@ using System.Windows.Input;
 
 namespace FriendOrganizer.UI.ViewModel
 {
-    public class FriendDetailViewModel : ViewModelBase, IFriendDetailViewModel
+    public class FriendDetailViewModel : DetailViewModelBase, IFriendDetailViewModel
     {
         private IFriendRepository _friendRepository;
-        private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
         private bool _hasChanges;
-
-        public bool HasChanges
-        {
-            get  => _hasChanges;
-            set 
-            {
-                // make sure it really changed
-                if (_hasChanges != value) 
-                {
-                    _hasChanges = value;
-                    OnPropertyChanged();
-
-                    // raise save event (RaiseCanExecuteChanged)
-                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-                }
-            }
-        }
 
         // setup friend property
         private FriendWrapper _friend;
@@ -70,14 +52,10 @@ namespace FriendOrganizer.UI.ViewModel
                 ((DelegateCommand)RemovePhoneNumberCommand).RaiseCanExecuteChanged();
             }
         }
-        public ICommand SaveCommand { get; }
-        public ICommand DeleteCommand { get; }
         public ICommand AddPhoneNumberCommand { get; }
         public ICommand RemovePhoneNumberCommand { get; }
         public ObservableCollection<LookupItem> ProgrammingLanguages { get; }
         public ObservableCollection<FriendPhoneNumberWrapper> PhoneNumbers { get; }
-
-        
 
         // ctor
         public FriendDetailViewModel(
@@ -85,17 +63,17 @@ namespace FriendOrganizer.UI.ViewModel
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
             IProgrammingLanguageLookupDataService programmingLanguageLookupDataService
-            )
+            ): base(eventAggregator)
         {
             _friendRepository = friendDataService;
-            _eventAggregator = eventAggregator;
             _messageDialogService = messageDialogService;
             _programmingLanguageLookupDataService = programmingLanguageLookupDataService;
 
             // using prism's delegate method
             // it takes an execute method and a boolean to indecate canExecuteMethod
-            SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
-            DeleteCommand = new DelegateCommand(OnDeleteExecute);
+            //// >> now we put it in DetailViewModelBaseClass
+            //SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
+            //DeleteCommand = new DelegateCommand(OnDeleteExecute);
 
             // add and remove phone command
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
@@ -112,7 +90,6 @@ namespace FriendOrganizer.UI.ViewModel
         {
             return SelectedPhoneNumber != null;
         }
-
         private void OnRemovePhoneNumberExecute()
         {
             // remove event handler for selected phone number
@@ -128,7 +105,6 @@ namespace FriendOrganizer.UI.ViewModel
             // let save button executable
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
         }
-
         private void OnAddPhoneNumberExecute()
         {
             var newNumber = new FriendPhoneNumberWrapper(new FriendPhoneNumber());
@@ -141,7 +117,7 @@ namespace FriendOrganizer.UI.ViewModel
             newNumber.Number = "";
         }
 
-        public async Task LoadAsync(int? friendId)
+        public override async Task LoadAsync(int? friendId)
         {
             // check the id pass in is null or not
             // if not load a friend
@@ -234,7 +210,7 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
-        private bool OnSaveCanExecute()
+        protected override bool OnSaveCanExecute()
         {
             // check input friend is valid，如果不行會自動被disable
             // make sure this method is called > this will be called
@@ -246,7 +222,7 @@ namespace FriendOrganizer.UI.ViewModel
                 && PhoneNumbers.All(pn => !pn.HasErrors); // check all phone numbers should be valid
         }
 
-        private async void OnSaveExecute()
+        protected override async void OnSaveExecute()
         {
             // save the input friend into db
             // pass the property into function!
@@ -255,13 +231,17 @@ namespace FriendOrganizer.UI.ViewModel
             // update hasChange property from db context
             HasChanges = _friendRepository.HasChanges();
 
+            RaiseDetailSavedEvent(Friend.Id, $"{Friend.FirstName} {Friend.LastName}");
+
             // publish event to refresh the navigation part >> then go to navigationViewModel to subcribe it
-            _eventAggregator.GetEvent<AfterFriendSvaeEvent>()
-                .Publish(new AfterFriendSvaeEventArgs
-                {
-                    Id = Friend.Id,
-                    DisplayMember = $"{Friend.FirstName} {Friend.LastName}"
-                });
+            //_eventAggregator.GetEvent<AfterDetailSavedEvent>()
+            //    .Publish(new AfterDetailSavedEventArgs
+            //    {
+            //        Id = Friend.Id,
+            //        DisplayMember = $"{Friend.FirstName} {Friend.LastName}",
+            //        ViewModelName = nameof(FriendDetailViewModel)
+            //    });
+            // >>> use base class's method
         }
 
         private Friend CreateNewFriend()
@@ -271,7 +251,7 @@ namespace FriendOrganizer.UI.ViewModel
             return friend;
         }
 
-        private async void OnDeleteExecute()
+        protected override async void OnDeleteExecute()
         {
             // show message dialog
             var result = _messageDialogService.ShowOkCancelDialog(
@@ -284,8 +264,18 @@ namespace FriendOrganizer.UI.ViewModel
             _friendRepository.Remove(Friend.Model);
             await _friendRepository.SaveAsync();
 
+            RaiseDetailDeletedEvent(Friend.Id);
+
             // tell navigation view the friend is deleted and hide friend detail view
-            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Publish(Friend.Id);
+            //_eventAggregator.GetEvent<AfterDetailDeletedEvent>()
+            //    .Publish(
+            //        new AfterDetailDeletedEventArgs
+            //        {
+            //            Id = Friend.Id,
+            //            ViewModelName = nameof(FriendDetailViewModel)
+            //        }
+            //    );
+            // >>> also use the base class's method
         }
 
     }

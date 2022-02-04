@@ -81,21 +81,25 @@
     <Compile Include="Data\Lookup\ILookupDataService.cs" />
     <Compile Include="Data\Lookup\IProgrammingLanguageLookupDataService.cs" />
     <Compile Include="Data\Lookup\LookupDataService.cs" />
-    <Compile Include="Event\AfterFriendDeletedEvent.cs" />
-    <Compile Include="Event\AfterFriendSvaeEvent.cs" />
-    <Compile Include="Event\OpenFriendDetailViewEvent.cs" />
+    <Compile Include="Data\Repository\GenericRepository.cs" />
+    <Compile Include="Data\Repository\IGenericRepository.cs" />
+    <Compile Include="Event\AfterDetailDeletedEvent.cs" />
+    <Compile Include="Event\AfterDetailSavedEvent.cs" />
+    <Compile Include="Event\OpenDetailViewEvent.cs" />
     <Compile Include="PostgreSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>PostgreSQL.xsd</DependentUpon>
     </Compile>
     <Compile Include="Startup\Boostrapper.cs" />
+    <Compile Include="ViewModel\DetailViewModelBase.cs" />
     <Compile Include="ViewModel\EntityExtend\FriendPhoneNumberWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\FriendWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\ModelWrapper.cs" />
     <Compile Include="ViewModel\EntityExtend\NavigationItemViewModel.cs" />
     <Compile Include="ViewModel\EntityExtend\NotifyDataErrorInfoBase.cs" />
     <Compile Include="ViewModel\FriendDetailViewModel.cs" />
+    <Compile Include="ViewModel\IDetailViewModel.cs" />
     <Compile Include="ViewModel\IFriendDetailViewModel.cs" />
     <Compile Include="ViewModel\INavigationViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

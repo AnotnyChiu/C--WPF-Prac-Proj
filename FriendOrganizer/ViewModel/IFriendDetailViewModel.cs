@@ -1,11 +1,8 @@
 ﻿using FriendOrganizer.Model;
-using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.ViewModel
 {
-    public interface IFriendDetailViewModel
+    public interface IFriendDetailViewModel : IDetailViewModel
     {
-        Task LoadAsync(int? friendId); // add a question mark to make it nullable
-        bool HasChanges { get; }
     }
 }

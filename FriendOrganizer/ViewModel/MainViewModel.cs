@@ -21,17 +21,17 @@ namespace FriendOrganizer.UI.ViewModel
         // QQ 拜託property的話讓他public 不然view之間溝通會出問題QQ
         // 一個private變public的問題耗了我3個小時阿QQ
         public INavigationViewModel NavigationViewModel { get; }
-        public DelegateCommand CreateNewFriendCommand { get; }
+        public DelegateCommand<Type> CreateNewDetailCommand { get; }
         private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; set; }
 
         private IMessageDialogService _messageDialogService;
-        private IFriendDetailViewModel _friendDetailViewModel;
-        public IFriendDetailViewModel FriendDetailViewModel
+        private IDetailViewModel _detailViewModel;
+        public IDetailViewModel DetailViewModel
         {
-            get { return _friendDetailViewModel; }
+            get { return _detailViewModel; }
             private set 
             {
-                _friendDetailViewModel = value;
+                _detailViewModel = value;
                 OnPropertyChanged();
             }
         }
@@ -51,17 +51,17 @@ namespace FriendOrganizer.UI.ViewModel
             _eventAggregator = eventAggregator;
 
             // also have to make the event argument nullable
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                            .Subscribe(OnOpenFriendDetailView);
+            _eventAggregator.GetEvent<OpenDetailViewEvent>()
+                            .Subscribe(OnOpenDetailView);
             // 注意這邊subscribe event的寫法，不需要()跟傳入參數
             // 只需要告訴他是哪個function即可
 
             // hide detail view after friend deleted >> subscribe to delete event
-            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Subscribe(AfterFriendDeleted);
+            _eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
 
             NavigationViewModel = navigationViewModel;
 
-            CreateNewFriendCommand = new DelegateCommand(OnCreateNewFriendExecute);
+            CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
         }
 
         public async Task LoadAsync() 
@@ -70,11 +70,11 @@ namespace FriendOrganizer.UI.ViewModel
            await NavigationViewModel.LoadAsync();
         }
 
-        private async void OnOpenFriendDetailView(int? friendId) // add a ? to make it nullable
+        private async void OnOpenDetailView(OpenDetailViewEventArgs args) // add a ? to make it nullable
         {
             // 每次點擊一個新的朋友，都會從新開啟一個repository，所以注意在切換之前
             // 要先提醒使用者舊的部分如果有做修改的話會不見
-            if (FriendDetailViewModel != null && FriendDetailViewModel.HasChanges) 
+            if (DetailViewModel != null && DetailViewModel.HasChanges) 
             {
                 // 注意 Messagebox不要直接用在viewModel裡面，不然會打斷unitest
                 var result = _messageDialogService.ShowOkCancelDialog(
@@ -86,20 +86,34 @@ namespace FriendOrganizer.UI.ViewModel
                 if (result == MessageDialogResult.Cancel) return;
             }
 
-            FriendDetailViewModel = _friendDetailViewModelCreator();
-            await FriendDetailViewModel.LoadAsync(friendId);
+            // check which detail view model to create
+            switch (args.ViewModelName)
+            {
+                case nameof(FriendDetailViewModel):
+                    DetailViewModel = _friendDetailViewModelCreator();
+                    break;
+                default:
+                    break;
+            }
+
+            await DetailViewModel.LoadAsync(args.Id);
         }
 
-        private void OnCreateNewFriendExecute()
+        private void OnCreateNewDetailExecute(Type viewModelType)
         {
             // just open a new view with empty friend
-            OnOpenFriendDetailView(null);
+            OnOpenDetailView(
+                new OpenDetailViewEventArgs 
+                {
+                    ViewModelName = viewModelType.Name
+                    // make it flexible so it can open different viewModel
+                });
         }
 
-        private void AfterFriendDeleted(int friendId)
+        private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
             // hide the detail view
-            FriendDetailViewModel = null;
+            DetailViewModel = null;
         }
     }
 }
