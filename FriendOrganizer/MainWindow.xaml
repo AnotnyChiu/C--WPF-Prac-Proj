@@ -16,6 +16,10 @@
         <DataTemplate DataType="{x:Type viewModel:FriendDetailViewModel}">
             <view:FriendDetailView/>
         </DataTemplate>
+        <!--要擴增時，先在這邊加入implicit view-->
+        <DataTemplate DataType="{x:Type viewModel:MeetingDetailViewModel}">
+            <view:MeetingDetailView/>
+        </DataTemplate>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -34,6 +38,10 @@
                 <MenuItem Header="New Friend" 
                           Command="{Binding CreateNewDetailCommand}"
                           CommandParameter="{x:Type viewModel:FriendDetailViewModel}"
+                          />
+                <MenuItem Header="New Meeting" 
+                          Command="{Binding CreateNewDetailCommand}"
+                          CommandParameter="{x:Type viewModel:MeetingDetailViewModel}"
                           />
             </MenuItem>
         </Menu>

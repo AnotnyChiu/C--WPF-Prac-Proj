@@ -23,8 +23,7 @@ namespace FriendOrganizer.UI.ViewModel
         private IFriendRepository _friendRepository;
         private IMessageDialogService _messageDialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
-        private bool _hasChanges;
-
+        
         // setup friend property
         private FriendWrapper _friend;
         public FriendWrapper Friend

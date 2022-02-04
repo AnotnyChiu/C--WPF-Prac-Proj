@@ -36,7 +36,12 @@ namespace FriendOrganizer.UI.Startup
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
             builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>();
-            builder.RegisterType<FriendDetailViewModel>().As<IFriendDetailViewModel>();
+
+            // 避免view model數量太多，用IIndex註冊字典
+            builder.RegisterType<FriendDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(FriendDetailViewModel));
+            builder.RegisterType<MeetingDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(MeetingDetailViewModel));
 
             // register db context
             builder.RegisterType<FriendOrganizerDbContext>().AsSelf();
@@ -44,6 +49,7 @@ namespace FriendOrganizer.UI.Startup
 
             // whenever a IFriendRepository is required, a FriendRepository will be sent back
             builder.RegisterType<FriendRepository>().As<IFriendRepository>();
+            builder.RegisterType<MeetingRepository>().As<IMeetingRepository>();
 
             // builder.RegisterType<LookupDataService>().As<IFriendLookupDataService>();
             // 上面這個As<Interface> 只能指定一個interface，但這個lookupDataService會有其他功能並繼承其他interfaces

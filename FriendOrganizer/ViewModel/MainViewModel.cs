@@ -11,6 +11,7 @@ using FriendOrganizer.UI.Event;
 using System.Windows;
 using FriendOrganizer.UI.View.Services;
 using Prism.Commands;
+using Autofac.Features.Indexed;
 
 namespace FriendOrganizer.UI.ViewModel
 {
@@ -22,7 +23,12 @@ namespace FriendOrganizer.UI.ViewModel
         // 一個private變public的問題耗了我3個小時阿QQ
         public INavigationViewModel NavigationViewModel { get; }
         public DelegateCommand<Type> CreateNewDetailCommand { get; }
-        private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; set; }
+
+        private IIndex<string, IDetailViewModel> _detailViewModelCreator;
+
+        //private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; set; }
+        //private Func<IMeetingDetailViewModel> _meetingDetailViewModelCreator { get; set; }
+        // 不用了
 
         private IMessageDialogService _messageDialogService;
         private IDetailViewModel _detailViewModel;
@@ -38,12 +44,18 @@ namespace FriendOrganizer.UI.ViewModel
 
         public MainViewModel(
             INavigationViewModel navigationViewModel,
-            Func<IFriendDetailViewModel> friendDetailViewModelCreator,
+            //Func<IFriendDetailViewModel> friendDetailViewModelCreator,
+            //Func<IMeetingDetailViewModel> meetingDetailViewModelCreator, 
+            // >> 這樣會造成這邊ctor被汙染以及有太多field >> 使用autofac IIndex 功能dynamically生成
+            IIndex<string, IDetailViewModel> detailViewModelCreator, // 用string(viewmodel名)作為key找到某一類的IDettailViewModel
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService
             )
         {
-            _friendDetailViewModelCreator = friendDetailViewModelCreator;
+            //_friendDetailViewModelCreator = friendDetailViewModelCreator;
+            //_meetingDetailViewModelCreator = meetingDetailViewModelCreator;
+            // 不用了
+            _detailViewModelCreator = detailViewModelCreator;
 
             _messageDialogService = messageDialogService;
 
@@ -87,15 +99,21 @@ namespace FriendOrganizer.UI.ViewModel
             }
 
             // check which detail view model to create
-            switch (args.ViewModelName)
-            {
-                case nameof(FriendDetailViewModel):
-                    DetailViewModel = _friendDetailViewModelCreator();
-                    break;
-                default:
-                    break;
-            }
+            //switch (args.ViewModelName)
+            //{
+            //    case nameof(FriendDetailViewModel):
+            //        DetailViewModel = _friendDetailViewModelCreator();
+            //        break;
+            //    case nameof(MeetingDetailViewModel):
+            //        DetailViewModel = _meetingDetailViewModelCreator();
+            //        break;
+            //    default:
+            //        throw new Exception($"view model: {args.ViewModelName} not mapped!");
+            //} >> 不要這樣生成
 
+
+            // IIndex: 類似字典去找view model
+            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
             await DetailViewModel.LoadAsync(args.Id);
         }
 

@@ -21,6 +21,10 @@ namespace FriendOrganizer.DataAccess
 
         public DbSet<FriendPhoneNumber> FriendPhoneNumbers { get; set; }
 
+        // setup meeting db set
+        public DbSet<Meeting> Meetings { get; set; }
+
+
         // use base constructor to specify connection string
         // but put the connString setting inside app.config file
         public FriendOrganizerDbContext() : base("FriendOrganizerDb")
@@ -36,7 +40,6 @@ namespace FriendOrganizer.DataAccess
 
             // table will be created call "Friend" though our property is called Friends here
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
             // add fluent api db column constraint
             // 作法一是直接寫在這邊，但不好，可以根據不同table拉出去寫
             //modelBuilder.Entity<Friend>()
@@ -46,6 +49,9 @@ namespace FriendOrganizer.DataAccess
 
             // add constraint class
             //modelBuilder.Configurations.Add(new FriendConfiguration());
+
+            // 找時間研究一下改變table跟column names變成 sanke case的做法 (snake case ex: user_id)
+            // modelBuilder.Entity<Friend>().ToTable("friend");
         }
     }
 

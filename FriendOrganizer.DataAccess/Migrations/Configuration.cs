@@ -2,6 +2,7 @@
 {
     using FriendOrganizer.Model;
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
@@ -46,6 +47,23 @@
             // seed phone number
             context.FriendPhoneNumbers.AddOrUpdate(pn => pn.Number,
                 new FriendPhoneNumber { Number = "0931031618", FriendId = context.Friends.FirstOrDefault().Id}
+                );
+
+            // seed meeting
+            context.Meetings.AddOrUpdate
+                (
+                    m => m.Title,
+                    new Meeting
+                    {
+                        Title = "Watching Soccer",
+                        DateFrom = new DateTime(2018, 5, 26),
+                        DateTo = new DateTime(2018, 5, 26),
+                        Friends = new List<Friend>
+                        {
+                            context.Friends.Single(f=> f.FirstName == "Thomas" && f.LastName == "Huber"),
+                            context.Friends.Single(f=> f.FirstName == "Antony" && f.LastName == "Chiu")
+                        }
+                    }
                 );
         }
     }
