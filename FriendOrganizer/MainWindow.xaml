@@ -54,11 +54,29 @@
         <!--use content control with implicit data template-->
         <!--when we specify content here to be viewModel, it will dynamically look up the
         implicit data template-->
-        <ContentControl 
+        <TabControl 
             Grid.Row="1"
             Grid.Column="1"
-            Content="{Binding DetailViewModel}"
+            ItemsSource="{Binding DetailViewModels}"
+            SelectedItem="{Binding SelectedDetailViewModel, Mode=TwoWay}"
             Grid.ColumnSpan="2"
-            Margin="0,0,-0.4,0.4"/>
+            Margin="0,0,-0.4,0.4">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" FontSize="15"/>
+                        <TextBlock Text="*" 
+                                   Visibility="{Binding HasChanges, 
+                                                Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <!--close button-->
+                        <Button Command="{Binding CloseDetailViewCommand}"
+                                VerticalAlignment="Center" Margin="4,0" 
+                                Foreground="PaleVioletRed" Background="Transparent"
+                                BorderBrush="Transparent"
+                                Content="x" FontSize="15"/>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+        </TabControl>
     </Grid>
 </Window>

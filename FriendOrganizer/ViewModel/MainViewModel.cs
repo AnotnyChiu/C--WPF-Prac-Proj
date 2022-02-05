@@ -31,13 +31,17 @@ namespace FriendOrganizer.UI.ViewModel
         // 不用了
 
         private IMessageDialogService _messageDialogService;
-        private IDetailViewModel _detailViewModel;
-        public IDetailViewModel DetailViewModel
+        private IDetailViewModel _selectedDetailViewModel;
+
+        // for tab UI, we need multiple view models
+        public ObservableCollection<IDetailViewModel> DetailViewModels { get; }
+
+        public IDetailViewModel SelectedDetailViewModel 
         {
-            get { return _detailViewModel; }
-            private set 
+            get { return _selectedDetailViewModel; }
+            set 
             {
-                _detailViewModel = value;
+                _selectedDetailViewModel = value;
                 OnPropertyChanged();
             }
         }
@@ -69,11 +73,19 @@ namespace FriendOrganizer.UI.ViewModel
             // 只需要告訴他是哪個function即可
 
             // hide detail view after friend deleted >> subscribe to delete event
-            _eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
+            _eventAggregator.GetEvent<AfterDetailDeletedEvent>()
+                            .Subscribe(AfterDetailDeleted);
+
+            // subscribe to tab closing event
+            _eventAggregator.GetEvent<AfterDetailClosedEvent>()
+                            .Subscribe(AfterDetailClosed);
 
             NavigationViewModel = navigationViewModel;
 
             CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
+
+            // for tabs
+            DetailViewModels = new ObservableCollection<IDetailViewModel>();
         }
 
         public async Task LoadAsync() 
@@ -84,45 +96,75 @@ namespace FriendOrganizer.UI.ViewModel
 
         private async void OnOpenDetailView(OpenDetailViewEventArgs args) // add a ? to make it nullable
         {
+            // tabs UI : get the current opened(clicked) view model
+            var detailViewModel = DetailViewModels.SingleOrDefault(
+                vm => vm.Id == args.Id
+                && vm.GetType().Name == args.ViewModelName
+                );
+
+            // if clicked thing doesn't exist yet, create a DetailViewModel for it
+            if (detailViewModel == null) 
+            {
+                // get type of view model
+                // IIndex: 類似字典去找view model
+                detailViewModel = _detailViewModelCreator[args.ViewModelName];
+                
+                // load data
+                await detailViewModel.LoadAsync(args.Id);
+                // refresh UI by adding it to collection
+                DetailViewModels.Add(detailViewModel);
+            }
+
+                SelectedDetailViewModel = detailViewModel;
+
+
             // 每次點擊一個新的朋友，都會從新開啟一個repository，所以注意在切換之前
             // 要先提醒使用者舊的部分如果有做修改的話會不見
-            if (DetailViewModel != null && DetailViewModel.HasChanges) 
-            {
-                // 注意 Messagebox不要直接用在viewModel裡面，不然會打斷unitest
-                var result = _messageDialogService.ShowOkCancelDialog(
-                    "You've made chnages. Navigate away may lose the data. Sure to leave?",
-                    "Question");
+            //if (SelectedDetailViewModel != null && SelectedDetailViewModel.HasChanges) 
+            //{
+            //    // 注意 Messagebox不要直接用在viewModel裡面，不然會打斷unitest
+            //    var result = _messageDialogService.ShowOkCancelDialog(
+            //        "You've made chnages. Navigate away may lose the data. Sure to leave?",
+            //        "Question");
 
-                // 注意這邊他的result是enum 不用property方式取
-                // 注意2: 可以用js寫法了 不用開block
-                if (result == MessageDialogResult.Cancel) return;
-            }
+            //    // 注意這邊他的result是enum 不用property方式取
+            //    // 注意2: 可以用js寫法了 不用開block
+            //    if (result == MessageDialogResult.Cancel) return;
+            //}
 
             // check which detail view model to create
             //switch (args.ViewModelName)
             //{
             //    case nameof(FriendDetailViewModel):
-            //        DetailViewModel = _friendDetailViewModelCreator();
+            //        SelectedDetailViewModel = _friendDetailViewModelCreator();
             //        break;
             //    case nameof(MeetingDetailViewModel):
-            //        DetailViewModel = _meetingDetailViewModelCreator();
+            //        SelectedDetailViewModel = _meetingDetailViewModelCreator();
             //        break;
             //    default:
             //        throw new Exception($"view model: {args.ViewModelName} not mapped!");
             //} >> 不要這樣生成
-
-
-            // IIndex: 類似字典去找view model
-            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
-            await DetailViewModel.LoadAsync(args.Id);
         }
 
+        private Dictionary<string, int> _nextNewItemIdDict = new Dictionary<string, int>();
+           
         private void OnCreateNewDetailExecute(Type viewModelType)
         {
+            //for counting order
+            if (_nextNewItemIdDict.ContainsKey(viewModelType.Name))
+            {
+                _nextNewItemIdDict[viewModelType.Name]--;
+            }
+            else
+            {
+                _nextNewItemIdDict.Add(viewModelType.Name, 0);
+            }
+
             // just open a new view with empty friend
             OnOpenDetailView(
-                new OpenDetailViewEventArgs 
+                new OpenDetailViewEventArgs
                 {
+                    Id = _nextNewItemIdDict[viewModelType.Name],
                     ViewModelName = viewModelType.Name
                     // make it flexible so it can open different viewModel
                 });
@@ -130,8 +172,28 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
-            // hide the detail view
-            DetailViewModel = null;
+            RemoveDetailViewModel(args.Id, args.ViewModelName);
+        }
+
+        private void AfterDetailClosed(AfterDetailClosedEventArgs args)
+        {
+            // same logic with delete detail
+            RemoveDetailViewModel(args.Id, args.ViewModelName);
+        }
+
+        private void RemoveDetailViewModel(int id, string viewModelName)
+        {
+            // tabs UI : get the current opened(clicked) view model
+            var detailViewModel = DetailViewModels.SingleOrDefault(
+                vm => vm.Id == id
+                && vm.GetType().Name == viewModelName
+                );
+
+            // remove it from the collection
+            if (detailViewModel != null)
+            {
+                DetailViewModels.Remove(detailViewModel);
+            }
         }
     }
 }

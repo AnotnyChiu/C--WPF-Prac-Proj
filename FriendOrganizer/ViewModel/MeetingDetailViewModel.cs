@@ -1,5 +1,6 @@
 ﻿using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data.Repository;
+using FriendOrganizer.UI.Event;
 using FriendOrganizer.UI.View.Services;
 using FriendOrganizer.UI.ViewModel.EntityExtend;
 using Prism.Commands;
@@ -22,10 +23,16 @@ namespace FriendOrganizer.UI.ViewModel
                 IEventAggregator eventAggregator,
                 IMessageDialogService messageDialogService,
                 IMeetingRepository meetingRepository
-            ) : base(eventAggregator)
+            ) : base(eventAggregator, messageDialogService)
         {
-            _messageDialogService = messageDialogService;
             _meetingRepository = meetingRepository;
+
+            // event for synchornize the data when edit friend's info
+            eventAggregator.GetEvent<AfterDetailSavedEvent>().Subscribe(AfterDetailSaved);
+
+            // event for synchornize the data when a friend's info is deleted
+            eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
+
 
             // fields for doing friend picklist formeeting
             AddedFriends = new ObservableCollection<Friend>();
@@ -34,8 +41,8 @@ namespace FriendOrganizer.UI.ViewModel
             RemoveFriendCommand = new DelegateCommand(OnRemoveFriendExecute, OnRemoveFriendCanExecute);
         }
 
+        
 
-        private IMessageDialogService _messageDialogService;
         private IMeetingRepository _meetingRepository;
 
         public ObservableCollection<Friend> AddedFriends { get; }
@@ -74,7 +81,7 @@ namespace FriendOrganizer.UI.ViewModel
         public MeetingWrapper Meeting 
         {
             get => _meeting;
-            private set 
+            set 
             {
                 _meeting = value;
                 OnPropertyChanged();
@@ -85,11 +92,14 @@ namespace FriendOrganizer.UI.ViewModel
 
 
         // 1. load meeting or create new one
-        public async override Task LoadAsync(int? meetingId)
+        public async override Task LoadAsync(int meetingId)
         {
-            var meeting = meetingId.HasValue
-                ? await _meetingRepository.GetByIdAsync(meetingId.Value) // 要使用 .Value 去除可能null
-                : CreateNewMeeting();
+            var meeting = meetingId > 0
+                ? await _meetingRepository.GetByIdAsync(meetingId) // 要使用 .Value 去除可能null
+                : CreateNewMeeting(meetingId);
+
+            // assign Id for tab UI
+            Id = meetingId;
 
             // build model wrapper and register event
             // do the UI work
@@ -123,10 +133,14 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
-        private Meeting CreateNewMeeting()
+        private Meeting CreateNewMeeting(int index)
         {
+            // convert index
+            string order = $"{(index - 1) * -1 }";
+            // set default name to new friend with the incomming id
             var meeting = new Meeting
             {
+                Title = $"New Mtg {order}",
                 DateFrom = DateTime.Now.Date,
                 DateTo = DateTime.Now.Date
             };
@@ -148,21 +162,35 @@ namespace FriendOrganizer.UI.ViewModel
                 {
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
                 }
+
+                // reset tab title name
+                if (e.PropertyName == nameof(Meeting.Title)) 
+                {
+                    SetTitle();
+                }
             };
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
 
             // validation when new meeting created
-            if (Meeting.Id == 0) 
-            {
-                // little trick to trigger validation
-                Meeting.Title = "";
-            }
+            //if (Meeting.Id == 0) 
+            //{
+            //    // little trick to trigger validation
+            //    //Meeting.Title = "";
+            //}
+
+            // set tab title
+            SetTitle();
+        }
+
+        private void SetTitle()
+        {
+            Title = Meeting.Title;
         }
 
         // delete event
         protected async override void OnDeleteExecute()
         {
-            var result = _messageDialogService.ShowOkCancelDialog(
+            var result = MessageDialogService.ShowOkCancelDialog(
                 $"Do you really want to delete this meeting: {Meeting.Title} ?"
                 ,"Question");
             if (result == MessageDialogResult.OK) 
@@ -184,6 +212,8 @@ namespace FriendOrganizer.UI.ViewModel
         {
             await _meetingRepository.SaveAsync();
             HasChanges = _meetingRepository.HasChanges();
+            // refresh Id for tab UI
+            Id = Meeting.Id;
             RaiseDetailSavedEvent(Meeting.Id, Meeting.Title);
         }
 
@@ -220,6 +250,35 @@ namespace FriendOrganizer.UI.ViewModel
             HasChanges = _meetingRepository.HasChanges();
             // let save button executable
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+        }
+
+        // for data synchornization
+        // tips: ctrl + - 可以回到游標的上一個地方!
+        private async void AfterDetailSaved(AfterDetailSavedEventArgs args)
+        {
+            // refresh the name in the picklist
+            if (args.ViewModelName == nameof(FriendDetailViewModel)) 
+            {
+                // notice since entity framework will caching entity
+                // so if the tab is opened and the friend been editted
+                // the entity here will still be the old one in cache
+                // >> _allFriends = await _meetingRepository.GetAllFriendsAsync();
+
+                // so we have to reload a single friend who's been editted
+                await _meetingRepository.ReloadFriendAsync(args.Id);
+                SetupPicklist();
+            }
+        }
+
+        // for data synchornization
+        private async void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
+        {
+            // refresh the name in the picklist
+            if (args.ViewModelName == nameof(FriendDetailViewModel))
+            {
+                await _meetingRepository.ReloadFriendAsync(args.Id);
+                SetupPicklist();
+            }
         }
     }
 }

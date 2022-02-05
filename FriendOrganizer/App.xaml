@@ -7,6 +7,8 @@
              <!--不要用startup uri 開啟xmal頁面，而是直接開startup-->
              <!--去App.cs把main window load 進來-->
     <Application.Resources>
+        <!--create a boolean to visibility converter-->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <!--here are the resources that are application wide-->
         <Style TargetType="TextBox">
             <!--create our own error template-->

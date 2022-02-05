@@ -101,6 +101,7 @@
     <Compile Include="Data\Repository\IGenericRepository.cs" />
     <Compile Include="Data\Repository\IMeetingRepository.cs" />
     <Compile Include="Data\Repository\MeetingRepository.cs" />
+    <Compile Include="Event\AfterDetailClosedEvent.cs" />
     <Compile Include="Event\AfterDetailDeletedEvent.cs" />
     <Compile Include="Event\AfterDetailSavedEvent.cs" />
     <Compile Include="Event\OpenDetailViewEvent.cs" />

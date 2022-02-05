@@ -17,7 +17,7 @@ namespace FriendOrganizer.UI.Event
     // 於是建立這個EventArgs的class
     public class OpenDetailViewEventArgs 
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public string ViewModelName { get; set; }
     }
 }

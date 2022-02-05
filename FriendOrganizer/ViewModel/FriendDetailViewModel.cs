@@ -21,7 +21,6 @@ namespace FriendOrganizer.UI.ViewModel
     public class FriendDetailViewModel : DetailViewModelBase, IFriendDetailViewModel
     {
         private IFriendRepository _friendRepository;
-        private IMessageDialogService _messageDialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
         
         // setup friend property
@@ -29,7 +28,7 @@ namespace FriendOrganizer.UI.ViewModel
         public FriendWrapper Friend
         {
             get { return _friend; }
-            private set
+            set
             {
                 _friend = value;
                 OnPropertyChanged();
@@ -62,10 +61,9 @@ namespace FriendOrganizer.UI.ViewModel
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
             IProgrammingLanguageLookupDataService programmingLanguageLookupDataService
-            ): base(eventAggregator)
+            ): base(eventAggregator, messageDialogService)
         {
             _friendRepository = friendDataService;
-            _messageDialogService = messageDialogService;
             _programmingLanguageLookupDataService = programmingLanguageLookupDataService;
 
             // using prism's delegate method
@@ -116,15 +114,18 @@ namespace FriendOrganizer.UI.ViewModel
             newNumber.Number = "";
         }
 
-        public override async Task LoadAsync(int? friendId)
+        public override async Task LoadAsync(int friendId)
         {
             // check the id pass in is null or not
             // if not load a friend
             // if yes then create a new friend
             // 注意這邊的nullable check，用HasValue去check，然後下面不能塞null的部份去取value的property
-            var friendEntity = friendId.HasValue ?
-                await _friendRepository.GetByIdAsync(friendId.Value)
-                : CreateNewFriend();
+            var friendEntity = friendId > 0?
+                await _friendRepository.GetByIdAsync(friendId)
+                : CreateNewFriend(friendId);
+
+            // set tab id
+            Id = friendId;
 
             // initialize friend
             InitializeFriend(friendEntity);
@@ -185,13 +186,28 @@ namespace FriendOrganizer.UI.ViewModel
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
                     // finally make sure the HasErrors property raise >> check NotifyDataErrorInfoBase
                 }
+                // reset the tab title if name changed
+                if (e.PropertyName == nameof(Friend.FirstName)
+                    || e.PropertyName == nameof(Friend.LastName)) 
+                {
+                    SetTitle();
+                }
             };
 
             // raise save event (RaiseCanExecuteChanged)
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
 
             // little trick to trigger input validation
-            if (Friend.Id == 0) Friend.FirstName = "";
+            // if (Friend.Id == 0) Friend.FirstName = "";
+            // we now set default name
+
+            // also set title when a new friend created
+            SetTitle();
+        }
+
+        private void SetTitle()
+        {
+            Title = $"{Friend.FirstName} {Friend.LastName}";
         }
 
         private async Task LoadProgrammmingLanguagesLookupAsync()
@@ -230,6 +246,9 @@ namespace FriendOrganizer.UI.ViewModel
             // update hasChange property from db context
             HasChanges = _friendRepository.HasChanges();
 
+            // refresh friend id
+            Id = Friend.Id;
+
             RaiseDetailSavedEvent(Friend.Id, $"{Friend.FirstName} {Friend.LastName}");
 
             // publish event to refresh the navigation part >> then go to navigationViewModel to subcribe it
@@ -243,9 +262,15 @@ namespace FriendOrganizer.UI.ViewModel
             // >>> use base class's method
         }
 
-        private Friend CreateNewFriend()
+        private Friend CreateNewFriend(int index)
         {
-            var friend = new Friend();
+            // convert index
+            string order = $"{(index - 1) * -1 }";
+            // set default name to new friend with the incomming id
+            var friend = new Friend()
+            {
+                FirstName = $"New Friend {order}"
+            };
             _friendRepository.Add(friend);
             return friend;
         }
@@ -255,13 +280,13 @@ namespace FriendOrganizer.UI.ViewModel
             // check if the friend to be deleted is part of any meeting
             if (await _friendRepository.HasMeetingsAsync(Friend.Id)) 
             {
-                _messageDialogService.ShowInfoDialog(
+                MessageDialogService.ShowInfoDialog(
                     $"Friend: {Friend.FirstName} {Friend.LastName} cannot be deleted since he/she is part of a least one meeting.");
                 return;
             }
 
             // show message dialog
-            var result = _messageDialogService.ShowOkCancelDialog(
+            var result = MessageDialogService.ShowOkCancelDialog(
                 $"Do you really want to delete friend: {Friend.FirstName} {Friend.LastName} ?",
                 "Question"
                 );

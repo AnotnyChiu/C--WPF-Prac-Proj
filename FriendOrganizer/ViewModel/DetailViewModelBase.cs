@@ -1,4 +1,5 @@
 ﻿using FriendOrganizer.UI.Event;
+using FriendOrganizer.UI.View.Services;
 using Prism.Commands;
 using Prism.Events;
 using System;
@@ -32,22 +33,48 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
+        private int _id;
+        public int Id
+        {
+            get { return _id; }
+            protected set { _id = value; }
+        }
+
+        // title property for show in tab title
+        private string _title;
+        public string Title
+        {
+            get => _title;
+            protected set 
+            { 
+                _title = value;
+                OnPropertyChanged();
+            }
+        }
+
+
         protected readonly IEventAggregator EventAggregator;
 
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; }
+        public ICommand CloseDetailViewCommand { get; }
+        public IMessageDialogService MessageDialogService { get; }
 
-        public DetailViewModelBase(IEventAggregator eventAggregator)
+        public DetailViewModelBase(
+            IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService)
         {
             EventAggregator = eventAggregator;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute);
+            CloseDetailViewCommand = new DelegateCommand(OnCloseDetailViewExecute);
+            MessageDialogService = messageDialogService;
         }
 
         protected abstract void OnDeleteExecute();
         protected abstract bool OnSaveCanExecute();
         protected abstract void OnSaveExecute();
-        public abstract Task LoadAsync(int? id);
+        public abstract Task LoadAsync(int id);
 
         // raise event
         protected virtual void RaiseDetailDeletedEvent(int modelId)
@@ -73,6 +100,26 @@ namespace FriendOrganizer.UI.ViewModel
                         ViewModelName = this.GetType().Name
                     }
                 );
+        }
+
+        protected virtual void OnCloseDetailViewExecute()
+        {
+            // if info changed, ask if want to leave
+            if (HasChanges) 
+            {
+                var result = MessageDialogService.ShowOkCancelDialog(
+                    "You've made changes. Close this item?", "Question");
+                if (result == MessageDialogResult.Cancel) return;
+            }
+            // for subclass to override
+            // close the instance
+            EventAggregator.GetEvent<AfterDetailClosedEvent>()
+                .Publish(
+                new AfterDetailClosedEventArgs
+                {
+                    Id = this.Id,
+                    ViewModelName = this.GetType().Name
+                });
         }
     }
 }

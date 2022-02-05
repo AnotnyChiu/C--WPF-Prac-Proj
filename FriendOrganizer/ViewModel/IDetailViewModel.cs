@@ -5,7 +5,8 @@ namespace FriendOrganizer.UI.ViewModel
     // implement all detail view model's base class to make it reusable
     public interface IDetailViewModel 
     {
-        Task LoadAsync(int? id); // add a question mark to make it nullable
+        Task LoadAsync(int id); // add a question mark to make it nullable
         bool HasChanges { get; }
+        int Id { get; }
     }
 }

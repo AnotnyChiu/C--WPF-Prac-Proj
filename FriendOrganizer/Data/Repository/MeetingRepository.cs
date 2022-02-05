@@ -29,5 +29,21 @@ namespace FriendOrganizer.UI.Data.Repository
         {
             return await _context.Set<Friend>().ToListAsync();
         }
+
+        // reload single friend
+        public async Task ReloadFriendAsync(int friendId)
+        {
+            // 從change tracker 中取出我們在找的friend
+            var dbEntityEntry = _context.ChangeTracker.Entries<Friend>()
+                .SingleOrDefault(db => db.Entity.Id == friendId);
+
+            // 使用change tracker的reload async功能來強制重整這個friend的info
+            // 先確認是否存在
+            if (dbEntityEntry != null) 
+            {
+                // reload the entity in this context from the database
+                await dbEntityEntry.ReloadAsync();
+            }
+        }
     }
 }
