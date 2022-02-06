@@ -12,6 +12,7 @@ using System.Windows;
 using FriendOrganizer.UI.View.Services;
 using Prism.Commands;
 using Autofac.Features.Indexed;
+using System.Windows.Input;
 
 namespace FriendOrganizer.UI.ViewModel
 {
@@ -22,7 +23,10 @@ namespace FriendOrganizer.UI.ViewModel
         // QQ 拜託property的話讓他public 不然view之間溝通會出問題QQ
         // 一個private變public的問題耗了我3個小時阿QQ
         public INavigationViewModel NavigationViewModel { get; }
-        public DelegateCommand<Type> CreateNewDetailCommand { get; }
+        public ICommand CreateNewDetailCommand { get; }
+
+        // for open programming kanguage tab
+        public ICommand OpenSingleDetailViewCommand { get; }
 
         private IIndex<string, IDetailViewModel> _detailViewModelCreator;
 
@@ -83,6 +87,7 @@ namespace FriendOrganizer.UI.ViewModel
             NavigationViewModel = navigationViewModel;
 
             CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
+            OpenSingleDetailViewCommand = new DelegateCommand<Type>(OnOpenSingleDetailViewExecute);
 
             // for tabs
             DetailViewModels = new ObservableCollection<IDetailViewModel>();
@@ -169,6 +174,19 @@ namespace FriendOrganizer.UI.ViewModel
                     // make it flexible so it can open different viewModel
                 });
         }
+
+        private void OnOpenSingleDetailViewExecute(Type viewModelType)
+        {
+            // programming language only has a single tab
+            OnOpenDetailView(
+                new OpenDetailViewEventArgs
+                {
+                    Id = -1, // will always has single tab
+                    ViewModelName = viewModelType.Name
+                    // make it flexible so it can open different viewModel
+                });
+        }
+
 
         private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {

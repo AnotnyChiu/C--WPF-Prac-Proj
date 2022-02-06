@@ -102,6 +102,15 @@ namespace FriendOrganizer.UI.ViewModel
                 );
         }
 
+        // raise event for collection save
+        protected virtual void RaiseCollectionSavedEvent()
+        {
+            EventAggregator.GetEvent<AfterCollectionSavedEvent>()
+                .Publish(new AfterCollectionSavedEventArgs
+                {
+                    ViewModelName = this.GetType().Name
+                });
+        }
         protected virtual void OnCloseDetailViewExecute()
         {
             // if info changed, ask if want to leave

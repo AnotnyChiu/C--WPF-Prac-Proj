@@ -42,6 +42,8 @@ namespace FriendOrganizer.UI.Startup
                 .Keyed<IDetailViewModel>(nameof(FriendDetailViewModel));
             builder.RegisterType<MeetingDetailViewModel>()
                 .Keyed<IDetailViewModel>(nameof(MeetingDetailViewModel));
+            builder.RegisterType<ProgrammingLanguageDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(ProgrammingLanguageDetailViewModel));
 
             // register db context
             builder.RegisterType<FriendOrganizerDbContext>().AsSelf();
@@ -50,6 +52,8 @@ namespace FriendOrganizer.UI.Startup
             // whenever a IFriendRepository is required, a FriendRepository will be sent back
             builder.RegisterType<FriendRepository>().As<IFriendRepository>();
             builder.RegisterType<MeetingRepository>().As<IMeetingRepository>();
+            builder.RegisterType<ProgrammingLanguageRepository>()
+                .As<IProgrammingLanguageRepository>();
 
             // builder.RegisterType<LookupDataService>().As<IFriendLookupDataService>();
             // 上面這個As<Interface> 只能指定一個interface，但這個lookupDataService會有其他功能並繼承其他interfaces

@@ -72,6 +72,10 @@ namespace FriendOrganizer.UI.ViewModel
             //SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             //DeleteCommand = new DelegateCommand(OnDeleteExecute);
 
+            // raise collection saved event when programming languages saved
+            eventAggregator.GetEvent<AfterCollectionSavedEvent>()
+                .Subscribe(AfterCollectionoSaved);
+
             // add and remove phone command
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
             RemovePhoneNumberCommand = 
@@ -83,6 +87,7 @@ namespace FriendOrganizer.UI.ViewModel
             PhoneNumbers = new ObservableCollection<FriendPhoneNumberWrapper>();
         }
 
+        
         private bool OnRemovePhoneNumberCanExecute()
         {
             return SelectedPhoneNumber != null;
@@ -308,6 +313,14 @@ namespace FriendOrganizer.UI.ViewModel
             //        }
             //    );
             // >>> also use the base class's method
+        }
+
+        private async void AfterCollectionoSaved(AfterCollectionSavedEventArgs args)
+        {
+            if (args.ViewModelName == nameof(ProgrammingLanguageDetailViewModel)) 
+            {
+                await LoadProgrammmingLanguagesLookupAsync();
+            }
         }
 
     }

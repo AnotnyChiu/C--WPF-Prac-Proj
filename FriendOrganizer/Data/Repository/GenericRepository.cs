@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.Data.Repository
@@ -19,6 +20,11 @@ namespace FriendOrganizer.UI.Data.Repository
         public void Add(TEntity model)
         {
             _context.Set<TEntity>().Add(model);
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await _context.Set<TEntity>().ToListAsync();
         }
 
         public virtual async Task<TEntity> GetByIdAsync(int id)
