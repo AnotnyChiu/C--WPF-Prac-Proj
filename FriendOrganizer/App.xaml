@@ -7,66 +7,88 @@
              <!--不要用startup uri 開啟xmal頁面，而是直接開startup-->
              <!--去App.cs把main window load 進來-->
     <Application.Resources>
-        <!--create a boolean to visibility converter-->
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <!--here are the resources that are application wide-->
-        <Style TargetType="TextBox">
-            <!--create our own error template-->
-            <Setter Property="Validation.ErrorTemplate">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <!--stakePanel means stake blocks vertically-->
-                        <StackPanel>
-                            <!--AdornedElementPlaceholder is the textbox we have-->
-                            <AdornedElementPlaceholder x:Name="placeholder"/>
-                            <TextBlock FontSize="12" Foreground="Red" 
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                <!-- Theme setting -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Lime.xaml" />
+                <!--BaseLight for 白底, BaseDark for 黑底--> 
+                <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />-->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml" />
+
+                <ResourceDictionary>
+                    <!--style for combobox (dropdown of programming languages)-->
+                    <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                        <Setter Property="FontSize" Value="18"/>
+                    </Style>
+                    <!--create a boolean to visibility converter-->
+                    <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+                    <!--uee "BasedOn" key word to specify want to inherit style from library-->
+                    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="FontSize" Value="17"/>
+                        <!--create our own error template-->
+                        <Setter Property="Validation.ErrorTemplate">
+                            <Setter.Value>
+                                <ControlTemplate>
+                                    <!--stakePanel means stake blocks vertically-->
+                                    <StackPanel>
+                                        <!--AdornedElementPlaceholder is the textbox we have-->
+                                        <AdornedElementPlaceholder x:Name="placeholder"/>
+                                        <TextBlock FontSize="12" Foreground="Red" 
                                        Text="{Binding ElementName=placeholder,
                                        Path=AdornedElement.(Validation.Errors)[0].ErrorContent
                                 }"/>
-                        </StackPanel>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <!-- change textbox's background color-->
-                    <Setter Property="Background" Value="Red"/>
-                    <!--for tooltip property-->
-                    <!-- binding the exception message since our exception return string-->
-                    <Setter Property="ToolTip" 
+                                    </StackPanel>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <!-- change textbox's background color-->
+                                <Setter Property="Background" Value="Red"/>
+                                <!--for tooltip property-->
+                                <!-- binding the exception message since our exception return string-->
+                                <Setter Property="ToolTip" 
                             Value="{Binding RelativeSource={RelativeSource Self}
                             , Path=(Validation.Errors)[0].ErrorContent}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        
-        <!--style for data grid column-->
-        <Style x:Key="DataGridColumnStyle" TargetType="TextBlock">
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <!-- change textbox's background color-->
-                    <Setter Property="Background" Value="Red"/>
-                    <!--for tooltip property-->
-                    <!-- binding the exception message since our exception return string-->
-                    <Setter Property="ToolTip" 
-                            Value="{Binding RelativeSource={RelativeSource Self}
-                            , Path=(Validation.Errors)[0].ErrorContent}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
 
-        <Style x:Key="DataGridEditingColumnStyle" TargetType="TextBox">
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <!-- change textbox's background color-->
-                    <Setter Property="Background" Value="Red"/>
-                    <!--for tooltip property-->
-                    <!-- binding the exception message since our exception return string-->
-                    <Setter Property="ToolTip" 
+                    <!--style for data grid column-->
+                    <Style x:Key="DataGridColumnStyle" TargetType="TextBlock">
+                        <Style.Triggers>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <!-- change textbox's background color-->
+                                <Setter Property="Background" Value="Red"/>
+                                <!--for tooltip property-->
+                                <!-- binding the exception message since our exception return string-->
+                                <Setter Property="ToolTip" 
                             Value="{Binding RelativeSource={RelativeSource Self}
                             , Path=(Validation.Errors)[0].ErrorContent}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+
+                    <Style x:Key="DataGridEditingColumnStyle" TargetType="TextBox">
+                        <Style.Triggers>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <!-- change textbox's background color-->
+                                <Setter Property="Background" Value="Red"/>
+                                <!--for tooltip property-->
+                                <!-- binding the exception message since our exception return string-->
+                                <Setter Property="ToolTip" 
+                            Value="{Binding RelativeSource={RelativeSource Self}
+                            , Path=(Validation.Errors)[0].ErrorContent}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+        <!--wrap the custom style into a resource dictionary-->
     </Application.Resources>
 </Application>

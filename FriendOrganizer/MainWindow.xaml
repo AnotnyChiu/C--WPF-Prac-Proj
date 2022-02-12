@@ -1,8 +1,9 @@
-﻿<Window x:Class="FriendOrganizer.UI.MainWindow"
+﻿<Controls:MetroWindow x:Class="FriendOrganizer.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FriendOrganizer.UI"
         xmlns:view="clr-namespace:FriendOrganizer.UI.View"
         xmlns:viewModel="clr-namespace:FriendOrganizer.UI.ViewModel"
@@ -70,10 +71,19 @@
             SelectedItem="{Binding SelectedDetailViewModel, Mode=TwoWay}"
             Grid.ColumnSpan="2"
             Margin="0,0,-0.4,0.4">
+            <!--set tab container style-->
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                    <!--other stlye setting-->
+                    <Setter Property="Background" Value="DarkBlue"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Style>
+            </TabControl.ItemContainerStyle>
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Title}" FontSize="15"/>
+                        <TextBlock Text="{Binding Title}" FontSize="18" VerticalAlignment="Center" FontWeight="Bold"/>
                         <TextBlock Text="*" 
                                    Visibility="{Binding HasChanges, 
                                                 Converter={StaticResource BoolToVisibilityConverter}}"/>
@@ -88,4 +98,4 @@
             </TabControl.ItemTemplate>
         </TabControl>
     </Grid>
-</Window>
+</Controls:MetroWindow>

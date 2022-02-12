@@ -117,7 +117,7 @@ namespace FriendOrganizer.UI.ViewModel
                 {
                     ex = ex.InnerException; // 只秀出最裡層(底層)的exceptioin
                 }
-                MessageDialogService.ShowInfoDialog(ex.Message);
+                await MessageDialogService.ShowInfoDialogAsync(ex.Message);
                 await LoadAsync(Id);
             }
            
@@ -143,7 +143,7 @@ namespace FriendOrganizer.UI.ViewModel
                 {
                     info += $"\n{lan}";
                 }
-                MessageDialogService.ShowInfoDialog(info); 
+                await MessageDialogService.ShowInfoDialogAsync(info); 
                 return;
             }
 

@@ -285,13 +285,13 @@ namespace FriendOrganizer.UI.ViewModel
             // check if the friend to be deleted is part of any meeting
             if (await _friendRepository.HasMeetingsAsync(Friend.Id)) 
             {
-                MessageDialogService.ShowInfoDialog(
+                await MessageDialogService.ShowInfoDialogAsync(
                     $"Friend: {Friend.FirstName} {Friend.LastName} cannot be deleted since he/she is part of a least one meeting.");
                 return;
             }
 
             // show message dialog
-            var result = MessageDialogService.ShowOkCancelDialog(
+            var result = await MessageDialogService.ShowOkCancelDialogAsync(
                 $"Do you really want to delete friend: {Friend.FirstName} {Friend.LastName} ?",
                 "Question"
                 );

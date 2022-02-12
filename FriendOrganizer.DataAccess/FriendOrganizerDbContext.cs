@@ -2,7 +2,9 @@
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Migrations.Model;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
@@ -13,6 +15,7 @@ namespace FriendOrganizer.DataAccess
 {
     // entity framework setup
     // first defind DbContext class and inherit DbContext from System.Data.Entity
+    [DbConfigurationType(typeof(NpgSqlConfiguration))]
     public class FriendOrganizerDbContext : DbContext
     {
         public DbSet<Friend> Friends { get; set; }
@@ -36,7 +39,6 @@ namespace FriendOrganizer.DataAccess
         // override OnModelCreating method
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
 
             // table will be created call "Friend" though our property is called Friends here
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
@@ -52,6 +54,14 @@ namespace FriendOrganizer.DataAccess
 
             // 找時間研究一下改變table跟column names變成 sanke case的做法 (snake case ex: user_id)
             // modelBuilder.Entity<Friend>().ToTable("friend");
+            modelBuilder.Entity<Friend>()
+                        .Property(p => p.RowVersion)
+                        .HasColumnName("xmin")
+                        .HasColumnType("text")
+                        .IsConcurrencyToken()
+                        .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
+            
+            base.OnModelCreating(modelBuilder);
         }
     }
 
@@ -67,6 +77,9 @@ namespace FriendOrganizer.DataAccess
         {
             var name = "Npgsql";
 
+            // for optimistic cocurrnecy
+            SetMigrationSqlGenerator(name, () => new SqlGenerator());
+
             SetProviderFactory(providerInvariantName: name,
                                providerFactory: NpgsqlFactory.Instance);
 
@@ -76,6 +89,32 @@ namespace FriendOrganizer.DataAccess
             SetDefaultConnectionFactory(connectionFactory: new NpgsqlConnectionFactory());
         }
     }
+
+    // sql generator to create database while creating migration file
+    public class SqlGenerator : NpgsqlMigrationSqlGenerator
+    {
+        private readonly string[] systemColumnNames = { "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid" };
+
+        protected override void Convert(CreateTableOperation createTableOperation)
+        {
+            var systemColumns = createTableOperation.Columns.Where(x => systemColumnNames.Contains(x.Name)).ToArray();
+            foreach (var systemColumn in systemColumns)
+                createTableOperation.Columns.Remove(systemColumn);
+            base.Convert(createTableOperation);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     //// 這個proj用annotation來設定constraint，所以這邊先comment掉
     // add table constraint class

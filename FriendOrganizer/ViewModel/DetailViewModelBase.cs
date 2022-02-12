@@ -111,12 +111,12 @@ namespace FriendOrganizer.UI.ViewModel
                     ViewModelName = this.GetType().Name
                 });
         }
-        protected virtual void OnCloseDetailViewExecute()
+        protected async virtual void OnCloseDetailViewExecute()
         {
             // if info changed, ask if want to leave
             if (HasChanges) 
             {
-                var result = MessageDialogService.ShowOkCancelDialog(
+                var result = await MessageDialogService.ShowOkCancelDialogAsync(
                     "You've made changes. Close this item?", "Question");
                 if (result == MessageDialogResult.Cancel) return;
             }

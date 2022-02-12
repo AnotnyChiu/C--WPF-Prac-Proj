@@ -190,7 +190,7 @@ namespace FriendOrganizer.UI.ViewModel
         // delete event
         protected async override void OnDeleteExecute()
         {
-            var result = MessageDialogService.ShowOkCancelDialog(
+            var result = await MessageDialogService.ShowOkCancelDialogAsync(
                 $"Do you really want to delete this meeting: {Meeting.Title} ?"
                 ,"Question");
             if (result == MessageDialogResult.OK) 

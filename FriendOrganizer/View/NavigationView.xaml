@@ -17,7 +17,8 @@
         <DataTemplate x:Key="NaviItemTemplate">
             <Button
                 Command="{Binding OpenDetailViewCommand}"
-                Content="{Binding DisplayMember}">
+                Content="{Binding DisplayMember}"
+                FontSize="15">
                 <!--paste in the button template-->
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
@@ -51,7 +52,8 @@
                 <ItemsControl 
                 Grid.Column="0" ItemsSource="{Binding Friends}"
                 ItemContainerStyle="{StaticResource NaviItemContainerStyle}"
-                ItemTemplate="{StaticResource NaviItemTemplate}"/>
+                ItemTemplate="{StaticResource NaviItemTemplate}"
+                Margin="5"/>
             </ScrollViewer>
         </GroupBox>
         <!--block for meeting-->
@@ -60,7 +62,8 @@
                 <ItemsControl 
                 Grid.Column="0" ItemsSource="{Binding Meetings}"
                 ItemContainerStyle="{StaticResource NaviItemContainerStyle}"
-                ItemTemplate="{StaticResource NaviItemTemplate}"/>
+                ItemTemplate="{StaticResource NaviItemTemplate}"
+                Margin="5"/>
             </ScrollViewer>
         </GroupBox>
     </Grid>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,5 +36,16 @@ namespace FriendOrganizer.Model
             PhoneNumbers = new Collection<FriendPhoneNumber>();
             Meetings = new Collection<Meeting>();
         }
+
+        // row version for optimistic concurrency
+        // 說明: 當同時有許多使用者針對同一個Friend修改並儲存時
+        // 這個property會去check他的版本，如果現有DB版本跟UI的版本不一時代表有其他人修改過資料
+        // 此時會丟出exception，然後再針對這個exception去跟使用者確認是否覆蓋即可
+        // [Timestamp] // 這個decorator說明這個property是row version
+        // [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        // [ConcurrencyCheck]
+        // [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        //[NotMapped]
+        public string RowVersion { get; set; }
     }
 }
